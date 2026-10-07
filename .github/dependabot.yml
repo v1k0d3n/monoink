@@ -42,7 +42,8 @@ updates:
     schedule:
       interval: weekly
     ignore:
-      # Node 22 matches CI (setup-node) and the toolchain the plugin is built
-      # with; move to the next LTS deliberately.
-      - dependency-name: node
+      # Node 22 (LTS) matches CI's setup-node; move to the next even-numbered
+      # LTS deliberately, never to an odd "current" release. Dependabot names
+      # Docker Hub official images "library/<name>".
+      - dependency-name: library/node
         update-types: ["version-update:semver-major"]
