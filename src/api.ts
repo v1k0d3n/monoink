@@ -9,6 +9,7 @@ export interface Settings {
   pinned_screen: string;
   rotate_minutes: number;
   clock_24h: boolean;
+  dark_mode: boolean;
   week_starts_sunday: boolean;
   weather: { latitude: number; longitude: number; place: string; imperial: boolean };
   allow_steam_cdn: boolean;

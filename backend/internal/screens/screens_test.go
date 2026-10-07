@@ -84,3 +84,16 @@ func TestRenderAll(t *testing.T) {
 		}
 	}
 }
+
+func TestInvertKeepsPictures(t *testing.T) {
+	c := NewCanvas()
+	art := image.NewGray(image.Rect(0, 0, 10, 10)) // all black
+	c.Picture(art, image.Rect(100, 100, 110, 110), true)
+	c.Invert()
+	if c.GrayAt(0, 0).Y != 0 {
+		t.Error("white background should become black")
+	}
+	if c.GrayAt(105, 105).Y != 0 {
+		t.Error("picture must not be inverted")
+	}
+}

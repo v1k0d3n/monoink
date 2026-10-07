@@ -309,7 +309,7 @@ func (e *Engine) step(ctx context.Context) {
 		e.mu.Unlock()
 	}
 	data := e.snapshot(ctx, now, s, id)
-	frame := render.Pack(scr.Render(data).Gray)
+	frame := render.Pack(draw(scr, data, s))
 
 	e.mu.Lock()
 	e.current, e.renderAt, e.force = id, now, false
@@ -341,14 +341,24 @@ func (e *Engine) step(ctx context.Context) {
 	}()
 }
 
+// draw renders a screen with the user's appearance settings applied.
+func draw(scr screens.Screen, data *screens.Data, s settings.Settings) *image.Gray {
+	c := scr.Render(data)
+	if s.DarkMode {
+		c.Invert()
+	}
+	return c.Gray
+}
+
 // Preview renders a screen without sending it.
 func (e *Engine) Preview(ctx context.Context, id string) (*image.Gray, error) {
 	scr, ok := screens.All[id]
 	if !ok {
 		return nil, fmt.Errorf("unknown screen %q", id)
 	}
-	data := e.snapshot(ctx, time.Now(), e.Store.Get(), id)
-	img := scr.Render(data).Gray
+	s := e.Store.Get()
+	data := e.snapshot(ctx, time.Now(), s, id)
+	img := draw(scr, data, s)
 	// Show exactly what the panel receives (1-bit).
 	for i, v := range img.Pix {
 		if v >= 128 {

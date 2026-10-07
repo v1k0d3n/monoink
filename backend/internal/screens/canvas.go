@@ -66,10 +66,13 @@ func face(w Weight, size int) font.Face {
 }
 
 // Canvas is a panel-sized grayscale drawing surface.
-type Canvas struct{ *image.Gray }
+type Canvas struct {
+	*image.Gray
+	pictures []image.Rectangle // where photos/art were placed (kept as-is by Invert)
+}
 
 func NewCanvas() *Canvas {
-	c := &Canvas{image.NewGray(image.Rect(0, 0, proto.Width, proto.Height))}
+	c := &Canvas{Gray: image.NewGray(image.Rect(0, 0, proto.Width, proto.Height))}
 	c.Fill(c.Bounds(), white)
 	return c
 }
@@ -229,4 +232,29 @@ func (c *Canvas) Picture(img image.Image, r image.Rectangle, crop bool) {
 
 	clip := dst.Intersect(r)
 	xdraw.Draw(c.Gray, clip, tmp, clip.Min.Sub(dst.Min), xdraw.Src)
+	c.pictures = append(c.pictures, clip)
+}
+
+// Invert flips everything except photos and cover art ("dark mode"):
+// inverted pictures would look like photographic negatives.
+func (c *Canvas) Invert() {
+	b := c.Bounds()
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		row := c.Pix[y*c.Stride : y*c.Stride+b.Dx()]
+		for x := range row {
+			if !c.inPicture(x, y) {
+				row[x] = 255 - row[x]
+			}
+		}
+	}
+}
+
+func (c *Canvas) inPicture(x, y int) bool {
+	p := image.Pt(x, y)
+	for _, r := range c.pictures {
+		if p.In(r) {
+			return true
+		}
+	}
+	return false
 }

@@ -315,6 +315,14 @@ function Content() {
 
       <PanelSection title="Screens">
         <PanelSectionRow>
+          <ToggleField
+            label="Dark mode"
+            description="White on black. Photos and cover art keep their colors."
+            checked={s.dark_mode}
+            onChange={(v) => patch({ dark_mode: v })}
+          />
+        </PanelSectionRow>
+        <PanelSectionRow>
           <DropdownItem
             label="Mode"
             rgOptions={[

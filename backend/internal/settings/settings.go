@@ -25,6 +25,7 @@ type Settings struct {
 	PinnedScreen  string   `json:"pinned_screen"`  // non-empty disables rotation
 	RotateMinutes int      `json:"rotate_minutes"` // time on each screen
 	Clock24h      bool     `json:"clock_24h"`
+	DarkMode      bool     `json:"dark_mode"` // white on black; photos unchanged
 	WeekStartsSun bool     `json:"week_starts_sunday"`
 
 	// Weather (no location = weather disabled; nothing is looked up automatically)
