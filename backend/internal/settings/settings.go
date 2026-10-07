@@ -103,7 +103,7 @@ func (s *Settings) normalize() {
 		valid[id] = true
 	}
 	seen := map[string]bool{}
-	screens := s.Screens[:0]
+	screens := []string{}
 	for _, id := range s.Screens {
 		if valid[id] && !seen[id] {
 			screens = append(screens, id)
@@ -185,7 +185,7 @@ func (s *Store) save() error {
 
 func clone(in Settings) Settings {
 	out := in
-	out.Screens = append([]string(nil), in.Screens...)
+	out.Screens = append([]string{}, in.Screens...) // never nil: encodes as [] not null
 	out.Providers = make(map[string]Provider, len(in.Providers))
 	for k, v := range in.Providers {
 		out.Providers[k] = v

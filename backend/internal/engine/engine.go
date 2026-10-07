@@ -177,6 +177,7 @@ func (e *Engine) Current() string {
 // Run blocks until ctx is cancelled and the connection manager has
 // released the display.
 func (e *Engine) Run(ctx context.Context) {
+	e.Sys.Sample() // prime CPU counters before the first render
 	e.Conn.OnConnected = e.rememberDevice
 	e.ApplySettings()
 	connDone := make(chan struct{})
@@ -199,6 +200,10 @@ func (e *Engine) Run(ctx context.Context) {
 }
 
 func (e *Engine) sampleLoop(ctx context.Context) {
+	// CPU load is a delta between two samples; take a quick first pair so
+	// the first frame after startup has a value instead of "—".
+	e.Sys.Sample()
+	time.Sleep(500 * time.Millisecond)
 	t := time.NewTicker(10 * time.Second)
 	defer t.Stop()
 	for {

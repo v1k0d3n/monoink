@@ -1,8 +1,10 @@
 package settings
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -56,5 +58,20 @@ func TestCorruptFileIsSetAside(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "settings.json.invalid")); err != nil {
 		t.Error("corrupt file not preserved")
+	}
+}
+
+func TestEmptyScreensEncodeAsArray(t *testing.T) {
+	st, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, _ := st.Update(func(s *Settings) { s.Screens = nil })
+	b, _ := json.Marshal(got)
+	if !strings.Contains(string(b), `"screens":[]`) {
+		t.Fatalf("screens must encode as an empty array: %s", b)
+	}
+	if b, _ := json.Marshal(st.Get()); !strings.Contains(string(b), `"screens":[]`) {
+		t.Fatalf("Get must not return nil screens: %s", b)
 	}
 }

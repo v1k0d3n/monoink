@@ -196,7 +196,7 @@ function Content() {
     );
   }
 
-  const s = status.settings;
+  const s = { ...status.settings, screens: status.settings.screens ?? [] };
   const c = status.connection;
   const titles = Object.fromEntries(status.screens.map((x) => [x.id, x.title]));
   const stateLine = [
@@ -322,6 +322,11 @@ function Content() {
                 onChange={(i) => patch({ rotate_minutes: ROTATE_STEPS[i] })}
               />
             </PanelSectionRow>
+            {s.screens.length === 0 && (
+              <PanelSectionRow>
+                <div style={{ fontSize: "12px" }}>No screens selected — the clock is shown.</div>
+              </PanelSectionRow>
+            )}
             {status.screens.map((x) => (
               <PanelSectionRow key={x.id}>
                 <ToggleField
