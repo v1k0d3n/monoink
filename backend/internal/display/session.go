@@ -106,11 +106,13 @@ func (s *Session) QueryInfo(ctx context.Context) (proto.DeviceInfo, error) {
 
 // SendFrame transmits a packed 1 bpp frame. progress (optional) is called
 // after each packet with (sent, total).
+//
+// Every frame is preceded by a device-info query, as the vendor software
+// does: the firmware only draws a frame that follows a query, so without
+// it a second frame on the same connection is received but never shown.
 func (s *Session) SendFrame(ctx context.Context, frame []byte, progress func(int, int)) error {
-	if s.Info == nil {
-		if _, err := s.QueryInfo(ctx); err != nil {
-			return err
-		}
+	if _, err := s.QueryInfo(ctx); err != nil {
+		return err
 	}
 	size := s.Info.PacketSize
 	if size <= 0 {

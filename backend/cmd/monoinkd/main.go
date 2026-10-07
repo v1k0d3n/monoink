@@ -12,6 +12,7 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -27,6 +28,7 @@ import (
 	"github.com/v1k0d3n/monoink/backend/internal/display"
 	"github.com/v1k0d3n/monoink/backend/internal/proto"
 	"github.com/v1k0d3n/monoink/backend/internal/render"
+	"github.com/v1k0d3n/monoink/backend/internal/screens"
 )
 
 var version = "dev"
@@ -218,6 +220,7 @@ func cmdProbe(ctx context.Context, args []string) error {
 	idle := fs.Duration("idle", 0, "wait this long after connecting before sending (simulates a kept-open link)")
 	sync := fs.Int("sync-every", 0, "experimental: unacknowledged writes with a sync every N packets")
 	repeat := fs.Int("repeat", 1, "send the test pattern this many times")
+	numbers := fs.Bool("numbers", false, "with -repeat: draw a large frame number instead of a checkerboard")
 	keep := fs.Bool("keep", false, "stay connected until Ctrl-C")
 	fs.Parse(args)
 
@@ -239,7 +242,13 @@ func cmdProbe(ctx context.Context, args []string) error {
 				}
 			}
 			cell := 40 + 20*(i%2) // alternate so the panel really redraws
-			if err := sendImage(ctx, sess, render.Pack(render.TestPattern(cell))); err != nil {
+			img := render.TestPattern(cell)
+			if *numbers {
+				c := screens.NewCanvas()
+				c.Text(fmt.Sprint(i+1), screens.W/2, 80, screens.Bold, 300, screens.Center, color.Gray{})
+				img = c.Gray
+			}
+			if err := sendImage(ctx, sess, render.Pack(img)); err != nil {
 				return err
 			}
 			sess.SyncEvery = *sync // takes effect once the ack mode is known

@@ -12,6 +12,7 @@ import (
 // each data packet via notification.
 type fakeLink struct {
 	ackNotify bool
+	queries   int
 	packets   [][]byte
 	ch        chan []byte
 }
@@ -27,6 +28,7 @@ func (f *fakeLink) Drain() {
 func (f *fakeLink) Write(_ context.Context, b []byte, _ bool) error {
 	switch b[1] {
 	case proto.CmdQueryInfo:
+		f.queries++
 		f.ch <- []byte{0x91, 0x00, 0x01, 0x00, 0x02, 0x88, 0x01, 0xE0, 0x00, 0x6C, 0x40, 0x19}
 	case proto.CmdSendData:
 		f.packets = append(f.packets, append([]byte(nil), b...))
@@ -59,5 +61,19 @@ func TestSendFrame(t *testing.T) {
 		if s.AckMode != wantMode {
 			t.Errorf("ack=%v: mode %v, want %v", ack, s.AckMode, wantMode)
 		}
+	}
+}
+
+func TestEveryFrameIsPrecededByQuery(t *testing.T) {
+	f := newFake(false)
+	s := New(f)
+	frame := make([]byte, proto.FrameSize)
+	for i := 0; i < 3; i++ {
+		if err := s.SendFrame(context.Background(), frame, nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if f.queries != 3 {
+		t.Fatalf("firmware only draws frames that follow a query: got %d queries for 3 frames", f.queries)
 	}
 }
