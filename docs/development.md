@@ -65,15 +65,27 @@ backend/out/monoinkd probe -test-pattern -numbers -repeat 3 -idle 3s   # must en
 
 ### One-time setup for the Claude workflows
 
-1. Create an API key at [console.anthropic.com](https://console.anthropic.com).
-2. In the repository: **Settings → Secrets and variables → Actions → New
-   repository secret**, name `ANTHROPIC_API_KEY`.
-3. Install the Claude GitHub app on the repository
-   ([github.com/apps/claude](https://github.com/apps/claude)), or run
-   `/install-github-app` from Claude Code.
+These use a **Claude Code subscription** (Pro or Max); no Anthropic API
+account is needed, and reviews count toward the subscription's usage.
 
-Without the secret, CI and releases work normally; only the Claude
-workflows fail.
+1. On any computer with Claude Code installed and logged in, run:
+
+   ```bash
+   claude setup-token
+   ```
+
+   It prints a long-lived token for GitHub Actions.
+2. In the repository: **Settings → Secrets and variables → Actions → New
+   repository secret**, name `CLAUDE_CODE_OAUTH_TOKEN`, value: the token.
+3. Install the Claude GitHub app on the repository
+   ([github.com/apps/claude](https://github.com/apps/claude)) so it can post
+   comments.
+
+(Running `/install-github-app` inside Claude Code walks through steps 2–3.)
+Until the secret exists, both Claude workflows skip themselves with a
+notice; CI and releases are unaffected. An Anthropic API key also works:
+swap `claude_code_oauth_token` for `anthropic_api_key` in the two workflow
+files.
 
 ### Pull requests from forks
 

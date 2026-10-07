@@ -5,7 +5,8 @@
 #
 # Only people with write access to the repository can trigger it; the
 # action enforces this. Checks out the trusted default branch, never a
-# fork's code. Requires the ANTHROPIC_API_KEY repository secret.
+# fork's code. Uses the CLAUDE_CODE_OAUTH_TOKEN repository secret (a Claude
+# Code subscription token); skipped if it isn't set.
 name: Claude
 
 on:
@@ -29,12 +30,19 @@ jobs:
       issues: write
       id-token: write
       actions: read
+    env:
+      HAS_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
     steps:
+      - name: Skip (CLAUDE_CODE_OAUTH_TOKEN not configured)
+        if: env.HAS_TOKEN != 'true'
+        run: echo "::notice::Set the CLAUDE_CODE_OAUTH_TOKEN secret to enable Claude (see docs/development.md)."
       - uses: actions/checkout@v7
+        if: env.HAS_TOKEN == 'true'
         with:
           fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
+        if: env.HAS_TOKEN == 'true'
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: |
             --append-system-prompt "You are working on monoink. Follow the principles in README.md and docs/development.md: no sudo, no new data access without opt-in, Go code gofmt'd with tests, main.py standard-library only."

@@ -3,7 +3,9 @@
 # maintainer requests their review by commenting "@claude review" (see
 # claude.yml), which runs in this repository's trusted context.
 #
-# Requires the ANTHROPIC_API_KEY repository secret (see docs/development.md).
+# Uses a Claude Code subscription (Pro/Max) via the CLAUDE_CODE_OAUTH_TOKEN
+# repository secret; no API account is needed. Skipped if the secret isn't
+# set. See docs/development.md.
 name: Claude Code Review
 
 on:
@@ -20,13 +22,20 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
+    env:
+      HAS_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
     steps:
+      - name: Skip (CLAUDE_CODE_OAUTH_TOKEN not configured)
+        if: env.HAS_TOKEN != 'true'
+        run: echo "::notice::Set the CLAUDE_CODE_OAUTH_TOKEN secret to enable Claude (see docs/development.md)."
       - uses: actions/checkout@v7
+        if: env.HAS_TOKEN == 'true'
         with:
           fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
+        if: env.HAS_TOKEN == 'true'
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
           prompt: |
             REPO: ${{ github.repository }}
