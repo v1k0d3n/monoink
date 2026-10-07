@@ -68,7 +68,7 @@ This link always points at the newest release.
    [Releases page](https://github.com/v1k0d3n/monoink/releases/latest)
    (under **Assets**) into your **Downloads** folder, for example from
    Desktop Mode's browser.
-2. In Gaming Mode: Decky settings → **Developer** → **Install Plugin From
+2. In Gaming Mode: Decky settings → **Developer** → **Install Plugin from
    ZIP File** → choose the zip.
 
 ## 4. Start using it
