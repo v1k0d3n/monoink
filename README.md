@@ -59,11 +59,11 @@ before, run their uninstaller first.
 
 ## Why this project exists
 
-We bought the faceplate and found the official software didn't work on a
-current SteamOS build. When we looked at why, we found design choices we
-weren't comfortable with. **We couldn't find a public source repository for
+I bought the faceplate and found the official software didn't work on a
+current SteamOS build. When I looked into why, I found design choices I
+wasn't comfortable with. **I couldn't find a public source repository for
 the official software**; it ships as an installer containing Python code,
-which is what we reviewed. Rather than patch it, we wrote monoink from
+which is what I reviewed. Rather than patch it, I wrote monoink from
 scratch with different goals:
 
 - **It should just work**, from Gaming Mode, for people who never open a
@@ -74,12 +74,12 @@ scratch with different goals:
 - **It should be open**, so anyone can check those claims.
 
 No JSAUX code is included. monoink speaks the same Bluetooth protocol, which
-we learned from their package (see [NOTICE](NOTICE)).
+I learned from their package (see [NOTICE](NOTICE)).
 
 ## How it compares
 
 Compared with the official **JSAUX E-INK V1.1** package (installer revision
-*OneClick-r3*, September 2026), which is the version we examined:
+*OneClick-r3*, September 2026), which is the version I examined:
 
 | | JSAUX E-INK V1.1 | monoink |
 | --- | --- | --- |
@@ -87,7 +87,7 @@ Compared with the official **JSAUX E-INK V1.1** package (installer revision
 | **Installation** | Unzip in Desktop Mode, run a `.desktop` installer, approve an admin prompt | Install a zip from Decky in Gaming Mode |
 | **Admin rights** | Uses `sudo`. If your account has no password, the installer **sets a temporary random password on it** to get sudo, then removes it | Never uses sudo or asks for a password (Decky Loader's own one-time installer may) |
 | **System changes** | Adds a udev rule in `/etc` for raw touchscreen access, a background service in your user's systemd folder, desktop shortcuts and icons | None outside Decky's own plugin and settings folders |
-| **Uninstalling** | In our case left the background service enabled and restarting every two seconds, plus the `/etc` rule and backup folders | Uninstall in Decky; only the settings folder remains |
+| **Uninstalling** | On my machine, left the background service enabled and restarting every two seconds, plus the `/etc` rule and backup folders | Uninstall in Decky; only the settings folder remains |
 | **Works on current SteamOS** | No: its bundled Python libraries are built only for Python 3.11/3.13, and current SteamOS ships 3.14, so the background service fails to start and the plugin shows "off" | Yes: one self-contained program with no Python libraries or system dependencies |
 | **Bluetooth reliability** | A failed connection isn't retried until you toggle it again; a saved display that isn't found isn't searched for | Never gives up while enabled: retries automatically with backoff and explains what's wrong in plain language |
 | **Update speed** | Reconnects for every frame | Keeps the connection open; about 3 seconds per update |
@@ -96,8 +96,8 @@ Compared with the official **JSAUX E-INK V1.1** package (installer revision
 | **Local network interface** | A web API on `127.0.0.1:39062` with no authentication or origin checks; it broadcasts status (including the AI-assistant data above) to any connected client, and can list image files in any folder | Private sockets readable only by your user account; no network port is opened |
 | **Temporary files** | Lock files in `/tmp` created world-writable (`0666`) | None in shared locations |
 
-We reported what we found in their package as it was when we examined it;
-later JSAUX releases may differ.
+This describes their package as it was when I examined it; later JSAUX
+releases may differ.
 
 ## Privacy and security
 
@@ -134,6 +134,7 @@ Everything monoink reads or contacts:
 - [Installing](docs/install.md): step-by-step install, update and troubleshooting.
 - [Custom cards](docs/providers.md): show your own information on the display.
 - [Development](docs/development.md): building, testing, CI and releases.
+- [Contributors](docs/contributors.md): who built this and how to help.
 
 ## For developers
 
@@ -155,3 +156,10 @@ monoinkd push -id my-tool -title "Build" -line "main: passing"   # send a card
 ## License
 
 MIT. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+---
+
+**Disclaimer:** I used Claude Code (Opus 5.5) to write this project. If there
+are any issues, concerns, or comments, please
+[create an issue](https://github.com/v1k0d3n/monoink/issues/new/choose) or
+[open a pull request](https://github.com/v1k0d3n/monoink/compare).
