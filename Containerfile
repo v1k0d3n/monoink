@@ -7,7 +7,7 @@
 
 FROM docker.io/library/golang:1.26 AS go
 
-FROM docker.io/library/node:22-bookworm
+FROM docker.io/library/node:25-bookworm
 
 COPY --from=go /usr/local/go /usr/local/go
 ENV PATH=/usr/local/go/bin:$PATH \
