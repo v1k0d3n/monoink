@@ -2,3 +2,4 @@ backend/out/
 node_modules/
 dist/
 out/
+.rollup.cache/

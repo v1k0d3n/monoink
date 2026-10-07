@@ -1,0 +1,10 @@
+{
+  "name": "E-Ink Faceplate",
+  "author": "Brandon B. Jozsa",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": ["hardware", "e-ink", "display", "bluetooth"],
+    "description": "Show a clock, weather, your current game and more on the JSAUX E-Ink faceplate. No sudo, no pairing, no data collection."
+  }
+}

@@ -398,6 +398,9 @@ func (m *Manager) connect(ctx context.Context, cfg Config) {
 
 	m.setState(Searching, "Looking for the display")
 	c, err := m.find(ctx, cfg)
+	if ctx.Err() != nil {
+		return // shutting down; not a failure
+	}
 	if err != nil {
 		m.fail(err.Error())
 		return
@@ -413,6 +416,12 @@ func (m *Manager) connect(ctx context.Context, cfg Config) {
 	cctx, cancel := context.WithTimeout(ctx, connectTimeout)
 	defer cancel()
 	link, err := m.bus.Connect(cctx, c.Path)
+	if ctx.Err() != nil {
+		if link != nil {
+			link.Close()
+		}
+		return
+	}
 	if err != nil {
 		m.fail("Could not connect: " + friendly(err))
 		return
