@@ -152,6 +152,8 @@ function Content() {
   const [error, setError] = useState("");
   const [provs, setProvs] = useState<Provider[]>([]);
   const [image, setImage] = useState<string | null>(null);
+  // Tracks a Redraw in progress: when it started and the frame it replaces.
+  const [redraw, setRedraw] = useState<{ since: number; prevFrame?: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -165,9 +167,23 @@ function Content() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 2000);
+    const t = setInterval(load, redraw ? 500 : 2000);
     return () => clearInterval(t);
-  }, [load]);
+  }, [load, redraw !== null]);
+
+  // Finish a Redraw once a new frame has landed (or give up after a minute).
+  useEffect(() => {
+    if (!redraw || !status) return;
+    const c = status.connection;
+    if (c.last_frame && c.last_frame !== redraw.prevFrame) {
+      const secs = Math.max(1, Math.round((Date.now() - redraw.since) / 1000));
+      notify(`Display updated (${secs} s)`);
+      setRedraw(null);
+    } else if (Date.now() - redraw.since > 60000) {
+      notify(`The display didn't update${c.reason ? `: ${c.reason}` : "."}`);
+      setRedraw(null);
+    }
+  }, [status, redraw]);
 
   // The preview mirrors what is on the display; refresh it whenever a new
   // frame lands or the screen changes.
@@ -280,8 +296,19 @@ function Content() {
           </PanelSectionRow>
         )}
         <PanelSectionRow>
-          <ButtonItem layout="below" onClick={() => api.refresh().then(() => notify("Redrawing the display"))}>
-            Redraw now
+          <ButtonItem
+            layout="below"
+            disabled={redraw !== null}
+            description="Fetches fresh info and redraws. Takes a few seconds over Bluetooth."
+            onClick={() => {
+              setRedraw({ since: Date.now(), prevFrame: c.last_frame });
+              api.refresh().catch((e) => {
+                notify(`Couldn't redraw: ${errText(e)}`);
+                setRedraw(null);
+              });
+            }}
+          >
+            {redraw ? (c.sending ? `Updating display… ${c.progress}%` : "Preparing…") : "Redraw now"}
           </ButtonItem>
         </PanelSectionRow>
       </PanelSection>

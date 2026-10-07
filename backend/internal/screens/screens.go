@@ -91,17 +91,23 @@ func (d *Data) ampm() string {
 	return d.Now.Format("PM")
 }
 
-func titleBar(c *Canvas, d *Data, title string) {
+// titleBar draws the header. withTime must only be set on screens whose
+// Cadence is at most a minute; otherwise the clock would sit there stale
+// until the screen's next redraw.
+func titleBar(c *Canvas, d *Data, title string, withTime bool) {
 	c.Text(strings.ToUpper(title), margin, 18, Bold, 22, Left, black)
 	right := W - margin
 	if d.Battery >= 0 {
 		right -= battery(c, right, 18, d.Battery) + 16
 	}
-	clock := d.Now.Format("Mon Jan 2") + "  " + d.timeString(d.Now)
-	if a := d.ampm(); a != "" {
-		clock += " " + a
+	label := d.Now.Format("Mon, Jan 2")
+	if withTime {
+		label = d.Now.Format("Mon Jan 2") + "  " + d.timeString(d.Now)
+		if a := d.ampm(); a != "" {
+			label += " " + a
+		}
 	}
-	c.Text(clock, right, 18, Medium, 20, Right, black)
+	c.Text(label, right, 18, Medium, 20, Right, black)
 	c.Fill(image.Rect(margin, header-3, W-margin, header), black)
 }
 
@@ -193,7 +199,7 @@ func Clock(d *Data) *Canvas {
 
 func Calendar(d *Data) *Canvas {
 	c := NewCanvas()
-	titleBar(c, d, "Calendar")
+	titleBar(c, d, "Calendar", false)
 	c.Text(d.Now.Format("January 2006"), W/2, header+18, Bold, 30, Center, black)
 
 	names := []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
@@ -241,7 +247,7 @@ func formatTemp(v float64, imperial bool) string {
 
 func Weather(d *Data) *Canvas {
 	c := NewCanvas()
-	titleBar(c, d, "Weather")
+	titleBar(c, d, "Weather", false)
 	r := d.Weather
 	if r == nil {
 		msg := d.WeatherMsg
@@ -260,9 +266,14 @@ func Weather(d *Data) *Canvas {
 	}
 	detail := fmt.Sprintf("Feels %s · %d%% humidity · %.0f %s", formatTemp(r.FeelsLike, r.Imperial), r.Humidity, r.Wind, wind)
 	c.Text(Fit(detail, Regular, 20, W-254-margin), 254, 244, Regular, 20, Left, black)
-	if d.Place != "" {
-		c.Text(Fit(d.Place, Regular, 18, W-254-margin), 254, 276, Regular, 18, Left, black)
+	place := "Updated " + d.timeString(r.Fetched) + " " + r.Fetched.Format("PM")
+	if d.Clock24h {
+		place = "Updated " + d.timeString(r.Fetched)
 	}
+	if d.Place != "" {
+		place = d.Place + " · " + place
+	}
+	c.Text(Fit(place, Regular, 18, W-254-margin), 254, 276, Regular, 18, Left, black)
 
 	c.Fill(image.Rect(margin, 314, W-margin, 316), black)
 	n := len(r.Days)
@@ -355,7 +366,7 @@ func icon(c *Canvas, k weather.Kind, day bool, cx, cy, s float64) {
 
 func Performance(d *Data) *Canvas {
 	c := NewCanvas()
-	titleBar(c, d, "Performance")
+	titleBar(c, d, "Performance", true)
 	s := d.Sys
 	rows := []struct {
 		label string
@@ -419,7 +430,7 @@ func Performance(d *Data) *Canvas {
 
 func Game(d *Data) *Canvas {
 	c := NewCanvas()
-	titleBar(c, d, "Game")
+	titleBar(c, d, "Game", false)
 	g := d.Game
 	if g == nil {
 		message(c, header, "No recent games", "Play something on Steam and it will show up here.")
@@ -465,7 +476,7 @@ func Game(d *Data) *Canvas {
 func Photo(d *Data) *Canvas {
 	c := NewCanvas()
 	if d.Photo == nil {
-		titleBar(c, d, "Photo frame")
+		titleBar(c, d, "Photo frame", false)
 		message(c, header, "No photos", "Choose a folder with PNG, JPEG, GIF or WebP images.")
 		return c
 	}
@@ -479,11 +490,11 @@ func CardScreen(d *Data) *Canvas {
 	c := NewCanvas()
 	card := d.Card
 	if card == nil {
-		titleBar(c, d, "Cards")
+		titleBar(c, d, "Cards", false)
 		message(c, header, "No cards", "Approved providers can push status cards here.")
 		return c
 	}
-	titleBar(c, d, card.Provider)
+	titleBar(c, d, card.Provider, false)
 	y := header + 26
 	for _, line := range Wrap(card.Title, Bold, 40, W-2*margin, 2) {
 		c.Text(line, margin, y, Bold, 40, Left, black)

@@ -30,7 +30,7 @@ func sample() *Data {
 	progress := 0.42
 	return &Data{
 		Now: now, Battery: 87,
-		Weather: &weather.Report{Temp: 18.4, FeelsLike: 17, Humidity: 60, Wind: 12, Code: 2, IsDay: true,
+		Weather: &weather.Report{Fetched: now.Add(-20 * time.Minute), Temp: 18.4, FeelsLike: 17, Humidity: 60, Wind: 12, Code: 2, IsDay: true,
 			Days: []weather.Day{
 				{Date: now, Code: 2, Max: 21, Min: 11, Precip: 10},
 				{Date: now.AddDate(0, 0, 1), Code: 63, Max: 17, Min: 10, Precip: 80},

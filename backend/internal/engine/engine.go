@@ -124,12 +124,18 @@ func (e *Engine) Kick() {
 	}
 }
 
-// Refresh forces the current screen to be re-rendered and re-sent.
+// Refresh re-reads data sources and re-sends the current screen even if
+// the picture hasn't changed. Fresh weather arrives asynchronously and
+// triggers another redraw only if it changes the picture.
 func (e *Engine) Refresh() {
 	e.mu.Lock()
 	e.force = true
 	e.lastFrame = nil
+	e.gameAt = time.Time{}
+	clear(e.art)
 	e.mu.Unlock()
+	e.Sys.Sample()
+	go e.RefreshWeather(context.Background())
 	e.Kick()
 }
 
