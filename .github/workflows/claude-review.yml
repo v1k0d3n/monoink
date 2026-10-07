@@ -1,0 +1,58 @@
+# Automatic AI code review for pull requests opened from branches of this
+# repository. Pull requests from forks don't get repository secrets, so a
+# maintainer requests their review by commenting "@claude review" (see
+# claude.yml), which runs in this repository's trusted context.
+#
+# Requires the ANTHROPIC_API_KEY repository secret (see docs/development.md).
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  review:
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request to monoink, a Decky plugin plus a static Go
+            service (backend/) that drives a Bluetooth e-ink faceplate on SteamOS.
+            Read README.md and docs/ first for the project's principles.
+
+            Focus on, in order:
+            1. Correctness: bugs, races (the BLE connection has a single owner in
+               internal/conn), error handling, behaviour when the display is off
+               or out of range.
+            2. Project principles, which are hard requirements:
+               - no sudo and no writes outside the plugin's settings/data dirs;
+               - no new file reads or network requests unless listed in README.md
+                 and opt-in where they reveal anything about the user;
+               - the core never reads other apps' data or credentials (that is
+                 what provider cards are for);
+               - main.py stays standard-library only; monoinkd stays CGO-free.
+            3. Tests: new behaviour should have Go tests; protocol changes must
+               keep internal/proto and internal/display tests passing.
+            4. User experience in Gaming Mode: controller-friendly UI, clear
+               status messages for non-technical users.
+
+            Use inline comments for specific issues and one top-level summary.
+            Be concise; skip praise and style nits that gofmt/tsc already enforce.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

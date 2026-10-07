@@ -1,0 +1,35 @@
+name: Something isn't working
+description: The display doesn't connect, shows the wrong thing, or the plugin misbehaves.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you see instead? Photos of the display help.
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: Status shown in the plugin
+      description: Copy the line under "Enabled" in the Display section (e.g. "Retrying — Display not found").
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: Shown at the bottom of the plugin under Advanced → Version.
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Where were you?
+      options: [Gaming Mode, Desktop Mode, Both]
+  - type: textarea
+    id: log
+    attributes:
+      label: Log (optional but very helpful)
+      description: |
+        The log is at ~/homebrew/logs/monoink/monoinkd.log. In Desktop Mode, open Dolphin,
+        press Ctrl+H to show hidden folders, open homebrew → logs → monoink, and attach the file.
+        It contains no personal data beyond your display's Bluetooth address.
+      render: text

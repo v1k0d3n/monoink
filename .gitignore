@@ -2,4 +2,6 @@ backend/out/
 node_modules/
 dist/
 out/
+.cache/
 .rollup.cache/
+__pycache__/

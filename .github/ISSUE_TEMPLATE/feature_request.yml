@@ -1,0 +1,22 @@
+name: Idea or feature request
+description: A new screen, setting, or integration you'd like.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Describe it the way you'd explain it to a friend. Sketches or photos welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help you?
+  - type: checkboxes
+    id: provider
+    attributes:
+      label: Could this be a provider card?
+      description: Status info from another app or service can often be done without changing the plugin. See docs/providers.md.
+      options:
+        - label: I've read docs/providers.md and this needs a change to the plugin itself

@@ -3,8 +3,8 @@
 An open, privacy-respecting driver for the JSAUX E-Ink faceplate (5.83",
 648×480, monochrome, Bluetooth LE) on SteamOS.
 
-> Status: early development. The backend works on real hardware; the Decky
-> plugin is next.
+> Status: MVP. Works on real hardware from Gaming Mode via Decky.
+> Download the zip from Releases and follow [docs/install.md](docs/install.md).
 
 ## Goals
 
@@ -40,15 +40,19 @@ combined dashboard.
 | `api.open-meteo.com`, `geocoding-api.open-meteo.com` | only after you set a weather location |
 | `cdn.akamai.steamstatic.com` | only if you enable "download missing cover art" |
 
+## Documentation
+
+- [Installing](docs/install.md): download a release and install it with Decky.
+- [Custom cards](docs/providers.md): show your own information on the display.
+- [Development](docs/development.md): building, testing, CI and releases.
+
 ## Building
 
-Only `podman` (preinstalled on SteamOS) or `docker` is needed; the Go
-toolchain runs in a container.
+Only `podman` (preinstalled on SteamOS) or `docker` is needed; the whole
+toolchain is defined in [`Containerfile`](Containerfile).
 
 ```bash
-cd backend
-./build.sh test
-./build.sh build      # → backend/out/monoinkd
+./package.sh          # test and build → out/monoink.zip (install via Decky)
 ```
 
 ## Command line
@@ -57,7 +61,7 @@ cd backend
 monoinkd probe -test-pattern     # find the display, show its info, draw a test pattern
 monoinkd send picture.jpg        # dither and display an image
 monoinkd serve                   # run the service (normally started by the Decky plugin)
-monoinkd push -id my-tool -title "Build" -line "main: passing"   # provider card
+monoinkd push -id my-tool -title "Build" -line "main: passing"   # provider card, see docs/providers.md
 ```
 
 ## License

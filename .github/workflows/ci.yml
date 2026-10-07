@@ -1,0 +1,73 @@
+# Tests every push and pull request, and attaches an installable plugin zip
+# to the run so changes can be tried on a real device before release.
+# The backend and frontend jobs use GitHub's toolchains for fast feedback;
+# the package job uses the project's Containerfile for reproducibility.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Go)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: gofmt
+        working-directory: backend
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files need gofmt:"; echo "$unformatted"; exit 1
+          fi
+      - name: Vet and test
+        working-directory: backend
+        run: |
+          go vet ./...
+          go test -race ./...
+
+  frontend:
+    name: Plugin (TypeScript + Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build
+      - name: main.py compiles
+        run: python3 -c "import ast; ast.parse(open('main.py').read())"
+
+  # Builds the zip inside the Containerfile image, exactly as contributors
+  # and the release workflow do.
+  package:
+    name: Package (Containerfile)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: ./package.sh
+        env:
+          ENGINE: docker
+      - uses: actions/upload-artifact@v7
+        with:
+          name: monoink-plugin-${{ github.sha }}
+          path: out/monoink.zip
+          retention-days: 14
