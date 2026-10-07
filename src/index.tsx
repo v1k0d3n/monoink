@@ -151,7 +151,6 @@ function Content() {
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState("");
   const [provs, setProvs] = useState<Provider[]>([]);
-  const [previewId, setPreviewId] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -170,12 +169,13 @@ function Content() {
     return () => clearInterval(t);
   }, [load]);
 
-  const shown = previewId || status?.screen || "clock";
+  // The preview mirrors what is on the display; refresh it whenever a new
+  // frame lands or the screen changes.
+  const onDisplay = status?.screen || "";
+  const lastFrame = status?.connection.last_frame;
   useEffect(() => {
-    api.preview(shown).then(setImage);
-    const t = setInterval(() => api.preview(shown).then(setImage), 30000);
-    return () => clearInterval(t);
-  }, [shown, status?.settings.weather.place, status?.connection.last_frame]);
+    if (onDisplay) api.preview(onDisplay).then(setImage);
+  }, [onDisplay, lastFrame]);
 
   const patch = async (p: Partial<Settings>) => {
     try {
@@ -250,33 +250,38 @@ function Content() {
             Reconnect
           </ButtonItem>
         </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem layout="below" onClick={() => api.refresh().then(() => notify("Redrawing the display"))}>
-            Redraw now
-          </ButtonItem>
-        </PanelSectionRow>
       </PanelSection>
 
-      <PanelSection title="Preview">
-        <PanelSectionRow>
-          <DropdownItem
-            label="Screen"
-            rgOptions={status.screens.map((x) => ({
-              data: x.id,
-              label: x.id === status.screen ? `${x.title} (on display)` : x.title,
-            }))}
-            selectedOption={shown}
-            onChange={(o) => setPreviewId(o.data)}
-          />
-        </PanelSectionRow>
+      <PanelSection title="On the display">
         {image && (
           <PanelSectionRow>
             <img src={image} style={{ width: "100%", border: "1px solid #555", background: "#fff" }} />
           </PanelSectionRow>
         )}
         <PanelSectionRow>
-          <ButtonItem layout="below" onClick={() => api.show(shown).then(() => notify(`Showing ${titles[shown]}`))}>
-            Show on display now
+          <Field
+            label={titles[onDisplay] ?? "Nothing yet"}
+            description={s.pinned_screen ? "Pinned in Screens below" : "Rotating"}
+          />
+        </PanelSectionRow>
+        {!s.pinned_screen && (
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              onClick={() =>
+                api
+                  .next()
+                  .then((r) => notify(`Showing ${titles[r.screen] ?? r.screen}`))
+                  .catch((e) => notify(errText(e)))
+              }
+            >
+              Next screen
+            </ButtonItem>
+          </PanelSectionRow>
+        )}
+        <PanelSectionRow>
+          <ButtonItem layout="below" onClick={() => api.refresh().then(() => notify("Redrawing the display"))}>
+            Redraw now
           </ButtonItem>
         </PanelSectionRow>
       </PanelSection>
@@ -295,6 +300,14 @@ function Content() {
         </PanelSectionRow>
         {!s.pinned_screen && (
           <>
+            <PanelSectionRow>
+              <ToggleField
+                label="Show game while playing"
+                description="Switch to the Game screen while a Steam game is running."
+                checked={s.game_while_playing}
+                onChange={(v) => patch({ game_while_playing: v })}
+              />
+            </PanelSectionRow>
             <PanelSectionRow>
               <SliderField
                 label="Time per screen"

@@ -37,27 +37,49 @@ func TestDue(t *testing.T) {
 	}
 }
 
-func TestRotationAndOverride(t *testing.T) {
+func TestScreenPrecedence(t *testing.T) {
 	e := newTest(t)
 	e.Store.Update(func(s *settings.Settings) { s.Screens = []string{"clock", "weather"}; s.RotateMinutes = 1 })
+	e.ApplySettings()
 	s := e.Store.Get()
 	t0 := time.Unix(600, 0) // slot 10 → index 0
-	if got := e.activeScreen(t0, s); got != "clock" {
+	if got := e.activeScreen(t0, s, false); got != "clock" {
 		t.Errorf("slot 10: %s", got)
 	}
-	if got := e.activeScreen(t0.Add(time.Minute), s); got != "weather" {
+	if got := e.activeScreen(t0.Add(time.Minute), s, false); got != "weather" {
 		t.Errorf("slot 11: %s", got)
 	}
-	e.override, e.overrideTo = "game", t0.Add(30*time.Second)
-	if got := e.activeScreen(t0, s); got != "game" {
-		t.Errorf("override ignored: %s", got)
+	if got := e.activeScreen(t0, s, true); got != "game" {
+		t.Errorf("running game should take over: %s", got)
 	}
-	if got := e.activeScreen(t0.Add(31*time.Second), s); got != "clock" {
+	e.override, e.overrideTo = "calendar", t0.Add(30*time.Second)
+	if got := e.activeScreen(t0, s, true); got != "calendar" {
+		t.Errorf("Next override should beat the game: %s", got)
+	}
+	s.PinnedScreen = "dashboard"
+	if got := e.activeScreen(t0, s, true); got != "dashboard" {
+		t.Errorf("pin must beat everything: %s", got)
+	}
+	if got := e.activeScreen(t0.Add(31*time.Second), settings.Settings{Screens: s.Screens, RotateMinutes: 1}, false); got != "clock" {
 		t.Errorf("override not expired: %s", got)
 	}
-	s.PinnedScreen = "calendar"
-	if got := e.activeScreen(t0, s); got != "calendar" {
-		t.Errorf("pin ignored: %s", got)
+}
+
+func TestChangingScreensCancelsOverride(t *testing.T) {
+	e := newTest(t)
+	e.ApplySettings()
+	e.Show("calendar")
+	e.ApplySettings() // unrelated save: override survives
+	if e.override != "calendar" {
+		t.Fatal("override dropped by unrelated settings change")
+	}
+	e.Store.Update(func(s *settings.Settings) { s.PinnedScreen = "clock" })
+	e.ApplySettings()
+	if e.override != "" {
+		t.Fatal("pinning a screen must cancel the override")
+	}
+	if _, err := e.Next(); err == nil {
+		t.Fatal("Next should refuse while pinned")
 	}
 }
 

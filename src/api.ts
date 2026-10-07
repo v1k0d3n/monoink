@@ -12,6 +12,7 @@ export interface Settings {
   week_starts_sunday: boolean;
   weather: { latitude: number; longitude: number; place: string; imperial: boolean };
   allow_steam_cdn: boolean;
+  game_while_playing: boolean;
   photo_dir: string;
   photo_minutes: number;
   providers: Record<string, { approved: boolean; name?: string }>;
@@ -88,7 +89,7 @@ export const patchSettings = (patch: Partial<Settings>) => api<Settings>("PATCH"
 export const scan = () => api<Candidate[]>("POST", "/api/scan");
 export const reconnect = () => api<Connection>("POST", "/api/reconnect");
 export const refresh = () => api<{ ok: boolean }>("POST", "/api/refresh");
-export const show = (screen: string) => api<{ ok: boolean }>("POST", "/api/show", { screen });
+export const next = () => api<{ screen: string }>("POST", "/api/next");
 export const searchPlaces = (query: string) => api<Place[]>("POST", "/api/weather/search", { query });
 export const providers = () => api<Provider[]>("GET", "/api/providers");
 export const setProvider = (id: string, approve: boolean) =>

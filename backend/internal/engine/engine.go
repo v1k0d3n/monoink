@@ -58,6 +58,7 @@ type Engine struct {
 	pending    map[string]*screens.Card
 	photoIdx   int
 	photoAt    time.Time
+	screensKey string // pinned screen + rotation, to detect changes
 	override   string // screen shown until overrideTo
 	overrideTo time.Time
 	current    string
@@ -97,11 +98,19 @@ func (e *Engine) rememberDevice(addr string) {
 	}
 }
 
-// ApplySettings pushes connection settings to the manager.
+// ApplySettings pushes settings to the manager and re-evaluates the
+// display. Changing which screens are shown cancels a "Next" override so
+// the user's choice takes effect immediately.
 func (e *Engine) ApplySettings() {
 	s := e.Store.Get()
-	e.Conn.Configure(conn.Config{Enabled: s.Enabled, Address: s.DeviceAddress, KeepConnected: s.KeepConnected})
+	if e.Conn != nil {
+		e.Conn.Configure(conn.Config{Enabled: s.Enabled, Address: s.DeviceAddress, KeepConnected: s.KeepConnected})
+	}
+	key := s.PinnedScreen + "|" + strings.Join(s.Screens, ",")
 	e.mu.Lock()
+	if key != e.screensKey {
+		e.screensKey, e.override = key, ""
+	}
 	e.force = true
 	e.mu.Unlock()
 	e.Kick()
@@ -124,7 +133,8 @@ func (e *Engine) Refresh() {
 	e.Kick()
 }
 
-// Show displays a screen now; rotation resumes at the next slot.
+// Show displays a screen for one rotation period, then rotation resumes.
+// It has no effect while a screen is pinned.
 func (e *Engine) Show(id string) error {
 	if _, ok := screens.All[id]; !ok {
 		return fmt.Errorf("unknown screen %q", id)
@@ -136,6 +146,25 @@ func (e *Engine) Show(id string) error {
 	e.mu.Unlock()
 	e.Kick()
 	return nil
+}
+
+// Next advances the rotation to the screen after the one on display.
+func (e *Engine) Next() (string, error) {
+	s := e.Store.Get()
+	if s.PinnedScreen != "" {
+		return "", errors.New("a screen is pinned; choose Rotate to cycle screens")
+	}
+	if len(s.Screens) == 0 {
+		return "", errors.New("no screens are enabled for rotation")
+	}
+	cur := e.Current()
+	next := s.Screens[0]
+	for i, id := range s.Screens {
+		if id == cur {
+			next = s.Screens[(i+1)%len(s.Screens)]
+		}
+	}
+	return next, e.Show(next)
 }
 
 // Current returns the screen on the panel (or about to be).
@@ -184,28 +213,36 @@ func (e *Engine) sampleLoop(ctx context.Context) {
 
 // ---- screen selection ------------------------------------------------------
 
-// activeScreen picks the screen for now.
-func (e *Engine) activeScreen(now time.Time, s settings.Settings) string {
+// activeScreen picks the screen for now. Precedence: a pinned screen
+// (the user's explicit choice) > "Next screen" override > the game while
+// one is running > a fresh provider card > the rotation.
+func (e *Engine) activeScreen(now time.Time, s settings.Settings, playing bool) string {
+	if s.PinnedScreen != "" {
+		return s.PinnedScreen
+	}
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	if e.override != "" && now.Before(e.overrideTo) {
 		return e.override
 	}
 	e.override = ""
-	if s.PinnedScreen != "" {
-		return s.PinnedScreen
+	if playing && s.GameWhilePlaying {
+		return "game"
 	}
 	if s.CardsPreempt {
 		if c := e.freshCardLocked(now); c != nil && now.Sub(c.Updated) < 2*time.Minute {
 			return "card"
 		}
 	}
-	list := s.Screens
-	if len(list) == 0 {
+	return rotation(now, s)
+}
+
+func rotation(now time.Time, s settings.Settings) string {
+	if len(s.Screens) == 0 {
 		return "clock"
 	}
 	slot := now.Unix() / int64(s.RotateMinutes*60)
-	return list[int(slot%int64(len(list)))]
+	return s.Screens[int(slot%int64(len(s.Screens)))]
 }
 
 // due reports whether the screen's content has moved on since last render.
@@ -225,7 +262,13 @@ func (e *Engine) step(ctx context.Context) {
 		return
 	}
 	now := time.Now()
-	id := e.activeScreen(now, s)
+	playing := false
+	if s.GameWhilePlaying && s.PinnedScreen == "" {
+		if g := e.currentGame(now); g != nil && g.Running {
+			playing = true
+		}
+	}
+	id := e.activeScreen(now, s, playing)
 	scr := screens.All[id]
 
 	e.mu.Lock()

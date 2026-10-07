@@ -181,6 +181,15 @@ func (s *Server) Control() http.Handler {
 		writeJSON(w, 200, map[string]bool{"ok": true})
 	})
 
+	mux.HandleFunc("POST /api/next", func(w http.ResponseWriter, r *http.Request) {
+		id, err := e.Next()
+		if err != nil {
+			writeErr(w, 409, err)
+			return
+		}
+		writeJSON(w, 200, map[string]string{"screen": id})
+	})
+
 	mux.HandleFunc("GET /api/preview/{screen}", func(w http.ResponseWriter, r *http.Request) {
 		img, err := e.Preview(r.Context(), r.PathValue("screen"))
 		if err != nil {

@@ -31,7 +31,8 @@ type Settings struct {
 	Weather Weather `json:"weather"`
 
 	// Game screen
-	AllowSteamCDN bool `json:"allow_steam_cdn"` // fetch missing cover art from Steam's CDN
+	AllowSteamCDN    bool `json:"allow_steam_cdn"`    // fetch missing cover art from Steam's CDN
+	GameWhilePlaying bool `json:"game_while_playing"` // switch to the game screen while one runs
 
 	// Photo frame
 	PhotoDir     string `json:"photo_dir"`
@@ -72,13 +73,14 @@ var AllScreens = []string{"clock", "weather", "performance", "game", "calendar",
 // Defaults returns a fresh configuration.
 func Defaults() Settings {
 	return Settings{
-		Enabled:       true,
-		KeepConnected: true,
-		Screens:       []string{"dashboard", "clock", "game", "calendar"},
-		RotateMinutes: 10,
-		PhotoMinutes:  15,
-		Providers:     map[string]Provider{},
-		WebUI:         WebUI{Port: 39063},
+		Enabled:          true,
+		KeepConnected:    true,
+		Screens:          []string{"dashboard", "clock", "game", "calendar"},
+		RotateMinutes:    10,
+		GameWhilePlaying: true,
+		PhotoMinutes:     15,
+		Providers:        map[string]Provider{},
+		WebUI:            WebUI{Port: 39063},
 	}
 }
 
