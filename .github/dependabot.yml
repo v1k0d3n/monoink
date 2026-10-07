@@ -1,0 +1,48 @@
+version: 2
+updates:
+  # Decky panel (pnpm)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Majors that need coordinated changes; take them deliberately, not weekly.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      - dependency-name: rollup
+        update-types: ["version-update:semver-major"]
+      # Decky's packages track Decky Loader releases; upgrade alongside it.
+      - dependency-name: "@decky/*"
+        update-types: ["version-update:semver-major"]
+      # Types must match the React version Steam's client ships, not the latest.
+      - dependency-name: "@types/react"
+      - dependency-name: "@types/react-dom"
+
+  # monoinkd (Go)
+  - package-ecosystem: gomod
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      go-modules:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Build images: Containerfile (local/CI builds) and backend/Dockerfile
+  # (Decky store builds). Keep both on the same Go version when merging.
+  - package-ecosystem: docker
+    directories: [/, /backend]
+    schedule:
+      interval: weekly
+    ignore:
+      # Node 22 matches CI (setup-node) and the toolchain the plugin is built
+      # with; move to the next LTS deliberately.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
