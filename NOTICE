@@ -1,0 +1,9 @@
+monoink is an independent project. It is not affiliated with, endorsed by,
+or supported by JSAUX. "JSAUX" is used only to identify compatible hardware.
+
+The faceplate's Bluetooth protocol (GATT UUIDs, frame layout and command
+codes) was learned from the vendor's reference software, which is declared
+as MIT licensed. No vendor code is included in this repository.
+
+Embedded fonts are the Go fonts (golang.org/x/image/font/gofont), BSD
+licensed; see https://go.dev/blog/go-fonts.
