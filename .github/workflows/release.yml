@@ -27,14 +27,18 @@ jobs:
           ENGINE: docker
       - name: Prepare assets
         run: |
+          # Versioned name for people browsing releases, plus a fixed name so
+          # .../releases/latest/download/monoink.zip always points at the
+          # newest release (used by Decky's "Install Plugin from URL").
           cp out/monoink.zip "out/monoink-$GITHUB_REF_NAME.zip"
           (cd out && sha256sum "monoink-$GITHUB_REF_NAME.zip" > "monoink-$GITHUB_REF_NAME.zip.sha256")
           cat > out/notes.md <<EOF
           ## Install or update
 
           1. In Gaming Mode, open Quick Access (**⋯**) → **Decky** → ⚙ **Settings**, and turn on **Developer mode**.
-          2. Download **monoink-$GITHUB_REF_NAME.zip** below.
-          3. Decky → **Developer** → **Install Plugin From ZIP File** → choose the zip.
+          2. Decky → **Developer** → **Install Plugin from URL**:
+             \`https://github.com/$GITHUB_REPOSITORY/releases/latest/download/monoink.zip\`
+          3. Or download **monoink-$GITHUB_REF_NAME.zip** below and use **Install Plugin from ZIP File**.
 
           Updating keeps your settings. Full guide: [docs/install.md](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/docs/install.md)
           EOF
@@ -43,7 +47,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           prerelease=""
-          case "$GITHUB_REF_NAME" in v0.*|*-*) prerelease="--prerelease" ;; esac
+          # Only suffixed tags (v1.2.0-beta1) are pre-releases: GitHub's
+          # releases/latest link (used for installs) skips pre-releases.
+          case "$GITHUB_REF_NAME" in *-*) prerelease="--prerelease" ;; esac
           gh release create "$GITHUB_REF_NAME" \
-            "out/monoink-$GITHUB_REF_NAME.zip" "out/monoink-$GITHUB_REF_NAME.zip.sha256" \
+            "out/monoink-$GITHUB_REF_NAME.zip" "out/monoink-$GITHUB_REF_NAME.zip.sha256" out/monoink.zip \
             --title "monoink $GITHUB_REF_NAME" --notes-file out/notes.md --generate-notes $prerelease

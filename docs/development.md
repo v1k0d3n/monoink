@@ -59,7 +59,7 @@ backend/out/monoinkd probe -test-pattern -numbers -repeat 3 -idle 3s   # must en
 | Workflow | When | What |
 | --- | --- | --- |
 | **CI** (`ci.yml`) | every push to `main` and every pull request | gofmt, `go vet`, Go tests with the race detector, TypeScript type-check and build, `main.py` compile check, then a full package built with `Containerfile`. The installable zip is attached to the run as an artifact (*monoink-plugin-…*) for 14 days, so changes can be tried on a device before release. |
-| **Release** (`release.yml`) | pushing a `v*` tag | Builds and tests with `Containerfile`, then publishes a GitHub release with `monoink-vX.Y.Z.zip`, its SHA-256, install instructions and generated notes. `v0.*` and `-suffix` tags are marked pre-release. |
+| **Release** (`release.yml`) | pushing a `v*` tag | Builds and tests with `Containerfile`, then publishes a GitHub release with `monoink-vX.Y.Z.zip`, its SHA-256, install instructions and generated notes. Tags with a suffix (`v0.2.0-beta1`) are marked pre-release; plain versions become the release that `releases/latest/download/monoink.zip` points to. |
 | **Dependabot** (`dependabot.yml`) | weekly | Opens pull requests for updated npm packages, Go modules, GitHub Actions and build images (minor and patch updates grouped). CI runs on each one, so a green check means the update builds and passes the tests. |
 
 Major updates that need coordinated changes (TypeScript, Rollup, Decky's

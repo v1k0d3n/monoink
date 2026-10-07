@@ -22,22 +22,26 @@ Gaming Mode. No terminal, no sudo, no tracking.
 
 ## Install
 
-You need [Decky Loader](https://decky.xyz) and the faceplate switched on.
-You don't need to pair the faceplate in Steam's Bluetooth settings.
+You need [Decky Loader](https://decky.xyz) (the plugin system for SteamOS)
+and the faceplate switched on. Don't pair the faceplate in Steam's
+Bluetooth settings; monoink finds it by itself.
 
-1. Download **`monoink-vX.Y.Z.zip`** from the
-   [latest release](https://github.com/v1k0d3n/monoink/releases/latest)
-   (under **Assets**).
-2. In Gaming Mode, press **⋯** → **Decky** (plug icon) → **⚙ Settings** and
+1. In Gaming Mode, press **⋯** → **Decky** (plug icon) → **⚙ Settings** and
    turn on **Developer mode**.
-3. Open Decky's new **Developer** tab → **Install Plugin From ZIP File** →
-   choose the zip.
-4. Open **E-Ink Faceplate** in the Decky menu. It finds your display by
+2. Open Decky's new **Developer** tab → **Install Plugin from URL** and
+   enter:
+
+   ```
+   https://github.com/v1k0d3n/monoink/releases/latest/download/monoink.zip
+   ```
+
+3. Open **E-Ink Faceplate** in the Decky menu. It finds your display by
    itself, and within a few seconds the faceplate shows the dashboard.
 
-To update, install the newer zip the same way (your settings are kept). If
-you used JSAUX's own installer before, run their uninstaller first. More
-detail and troubleshooting: **[docs/install.md](docs/install.md)**.
+New to Decky, prefer downloading the zip, or need to update or uninstall?
+The **[install guide](docs/install.md)** covers everything step by step,
+including installing Decky itself. If you used JSAUX's own installer
+before, run their uninstaller first.
 
 ## What it does
 
@@ -81,7 +85,7 @@ Compared with the official **JSAUX E-INK V1.1** package (installer revision
 | --- | --- | --- |
 | **Source code** | No public repository found; Python files inside an installer | Open source (MIT) on GitHub, with tests and public CI builds |
 | **Installation** | Unzip in Desktop Mode, run a `.desktop` installer, approve an admin prompt | Install a zip from Decky in Gaming Mode |
-| **Admin rights** | Uses `sudo`. If your account has no password, the installer **sets a temporary random password on it** to get sudo, then removes it | Never uses sudo or asks for a password |
+| **Admin rights** | Uses `sudo`. If your account has no password, the installer **sets a temporary random password on it** to get sudo, then removes it | Never uses sudo or asks for a password (Decky Loader's own one-time installer may) |
 | **System changes** | Adds a udev rule in `/etc` for raw touchscreen access, a background service in your user's systemd folder, desktop shortcuts and icons | None outside Decky's own plugin and settings folders |
 | **Uninstalling** | In our case left the background service enabled and restarting every two seconds, plus the `/etc` rule and backup folders | Uninstall in Decky; only the settings folder remains |
 | **Works on current SteamOS** | No: its bundled Python libraries are built only for Python 3.11/3.13, and current SteamOS ships 3.14, so the background service fails to start and the plugin shows "off" | Yes: one self-contained program with no Python libraries or system dependencies |
@@ -118,6 +122,12 @@ Everything monoink reads or contacts:
 | The photo folder you choose | photo frame |
 | `api.open-meteo.com`, `geocoding-api.open-meteo.com` | only after you set a weather location |
 | `cdn.akamai.steamstatic.com` | only if you enable "Download missing cover art" |
+
+## Related projects
+
+- **[pixel-faceplate](https://github.com/hodapp/pixel-faceplate)**: an
+  independent Decky plugin for JSAUX's **Dot Matrix** faceplate (a different
+  device that connects over USB rather than Bluetooth).
 
 ## Documentation
 
