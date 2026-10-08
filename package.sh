@@ -4,6 +4,7 @@
 #
 #   ./package.sh            test and build out/monoink.zip
 #   ./package.sh test       run all tests and checks, no zip
+#   ./package.sh previews   re-render docs/images/screens (commit the result)
 #   ./package.sh shell      open a shell in the build environment
 #   ./package.sh run CMD    run CMD in the build environment (e.g. pnpm install)
 #   ./package.sh --native   build with locally installed Go 1.26+ and Node 22
@@ -66,13 +67,14 @@ case "${1:-}" in
 --native-test) native_test ;;
 test) in_container ./package.sh --native-test ;;
 shell) in_container bash ;;
+previews) in_container make -C backend previews ;;
 run)
 	shift
 	in_container "$@"
 	;;
 "") in_container ./package.sh --native ;;
 *)
-	sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
+	sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
 	exit 2
 	;;
 esac

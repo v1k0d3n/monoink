@@ -34,6 +34,7 @@ toolchain:
 ```bash
 ./package.sh            # all tests and checks, then out/monoink.zip
 ./package.sh test       # tests and checks only
+./package.sh previews   # re-render docs/images/screens after changing a screen
 ./package.sh shell      # a shell inside the build environment
 ./package.sh run pnpm install   # any command inside it
 ```
@@ -41,6 +42,15 @@ toolchain:
 Build outputs are owned by your user, and tool caches are kept in `.cache/`
 (gitignored) so repeat builds are fast. With Go 1.26+ and Node 22 already
 installed, `./package.sh --native` skips the container.
+
+### Screen previews
+
+[docs/screens.md](screens.md) shows every screen in light and dark mode. The
+images are rendered from fixed, fictional sample data
+(`backend/internal/screens/sample.go`) by `./package.sh previews`, and the
+output is deterministic. **If a pull request changes how any screen looks,
+regenerate and commit the previews in the same pull request**; CI fails when
+they're out of date, and reviewers see the visual change in the diff.
 
 To change a toolchain version, edit `Containerfile` (and `packageManager` in
 `package.json` for pnpm, `go` in `backend/go.mod` for Go).
@@ -58,7 +68,7 @@ backend/out/monoinkd probe -test-pattern -numbers -repeat 3 -idle 3s   # must en
 
 | Workflow | When | What |
 | --- | --- | --- |
-| **CI** (`ci.yml`) | every push to `main` and every pull request | gofmt, `go vet`, Go tests with the race detector, TypeScript type-check and build, `main.py` compile check, then a full package built with `Containerfile`. The installable zip is attached to the run as an artifact (*monoink-plugin-…*) for 14 days, so changes can be tried on a device before release. |
+| **CI** (`ci.yml`) | every push to `main` and every pull request | gofmt, `go vet`, Go tests with the race detector, a check that screen previews are up to date, TypeScript type-check and build, `main.py` compile check, then a full package built with `Containerfile`. The installable zip is attached to the run as an artifact (*monoink-plugin-…*) for 14 days, so changes can be tried on a device before release. |
 | **Release** (`release.yml`) | pushing a `v*` tag | Builds and tests with `Containerfile`, then publishes a GitHub release with `monoink-vX.Y.Z.zip`, its SHA-256, install instructions and generated notes. Tags with a suffix (`v0.2.0-beta1`) are marked pre-release; plain versions become the release that `releases/latest/download/monoink.zip` points to. |
 | **Dependabot** (`dependabot.yml`) | weekly | Opens pull requests for updated npm packages, Go modules, GitHub Actions and build images (minor and patch updates grouped). CI runs on each one, so a green check means the update builds and passes the tests. |
 

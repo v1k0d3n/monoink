@@ -39,6 +39,15 @@ jobs:
         run: |
           go vet ./...
           go test -race ./...
+      - name: Screen previews are up to date
+        working-directory: backend
+        run: |
+          make previews
+          if [ -n "$(git status --porcelain -- ../docs/images/screens)" ]; then
+            git status --short -- ../docs/images/screens
+            echo "::error::Screen previews are out of date. Run ./package.sh previews and commit docs/images/screens."
+            exit 1
+          fi
 
   frontend:
     name: Plugin (TypeScript + Python)
