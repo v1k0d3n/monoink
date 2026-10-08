@@ -115,3 +115,16 @@ func TestDashboardGameColumnStaysLeftOfDivider(t *testing.T) {
 		t.Fatalf("game column overflows into the divider gutter (%d px)", n)
 	}
 }
+
+func TestSessionLabel(t *testing.T) {
+	for d, want := range map[time.Duration]string{
+		10 * time.Second: "Just started",
+		59 * time.Second: "Just started",
+		time.Minute:      "1m",
+		83 * time.Minute: "1h 23m",
+	} {
+		if got := sessionLabel(d); got != want {
+			t.Errorf("sessionLabel(%v) = %q, want %q", d, got, want)
+		}
+	}
+}

@@ -569,7 +569,7 @@ func Game(d *Data) *Canvas {
 		y += 76
 	}
 	if session > 0 {
-		stat("This session", durationLabel(session))
+		stat("This session", sessionLabel(session))
 	}
 	if g.Playtime > 0 {
 		stat("Total playtime", durationLabel(g.Playtime))
@@ -578,6 +578,15 @@ func Game(d *Data) *Canvas {
 		stat("Last played", g.LastPlayed.Format("Mon, Jan 2"))
 	}
 	return c
+}
+
+// sessionLabel describes a session's length, avoiding "0m" in its first
+// minute.
+func sessionLabel(d time.Duration) string {
+	if d < time.Minute {
+		return "Just started"
+	}
+	return durationLabel(d)
 }
 
 // sessionClock formats a session as H:MM for the large timer.
@@ -705,7 +714,7 @@ func Dashboard(d *Data) *Canvas {
 			// Label and value on separate lines: the column is too narrow
 			// for "1h 23m this session" on one.
 			c.Text("This session", x, H-104, Regular, 14, Left, black)
-			c.Text(durationLabel(session), x, H-84, Bold, 22, Left, black)
+			c.Text(sessionLabel(session), x, H-84, Bold, 22, Left, black)
 		}
 		if g.Playtime > 0 {
 			c.Text(durationLabel(g.Playtime)+" total", x, H-44, Regular, 18, Left, black)
