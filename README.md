@@ -121,6 +121,7 @@ Everything monoink reads or contacts:
 | --- | --- |
 | BlueZ (the system Bluetooth service) | always: finding and talking to the display |
 | `/proc`, `/sys` | performance screen: CPU, memory, temperatures, GPU load |
+| `/proc/bus/input/devices` (device names and types only, never serial numbers) | game screen: whether a game controller is connected |
 | Steam's local files (`steamapps/*.acf`, `userdata/*/config/localconfig.vdf`, `appcache/librarycache`) | game screen: name, playtime, cached cover art |
 | The photo folder you choose | photo frame |
 | `api.open-meteo.com`, `geocoding-api.open-meteo.com` | only after you set a weather location |
