@@ -52,6 +52,7 @@ type Data struct {
 
 	Photo     image.Image
 	PhotoName string
+	PhotoFill bool // crop photos to fill the screen instead of fitting them
 
 	Card *Card
 }
@@ -493,7 +494,7 @@ func Photo(d *Data) *Canvas {
 		message(c, header, "No photos", "Choose a folder with PNG, JPEG, GIF or WebP images.")
 		return c
 	}
-	c.Picture(d.Photo, c.Bounds(), false)
+	c.Picture(d.Photo, c.Bounds(), d.PhotoFill)
 	return c
 }
 

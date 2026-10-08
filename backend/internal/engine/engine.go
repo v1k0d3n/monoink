@@ -395,6 +395,7 @@ func (e *Engine) snapshot(ctx context.Context, now time.Time, s settings.Setting
 	}
 	if id == "photo" {
 		d.Photo, d.PhotoName = e.photo(s)
+		d.PhotoFill = s.PhotoFill
 	}
 	return d
 }

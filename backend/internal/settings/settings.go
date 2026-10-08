@@ -39,6 +39,7 @@ type Settings struct {
 	// Photo frame
 	PhotoDir     string `json:"photo_dir"`
 	PhotoMinutes int    `json:"photo_minutes"`
+	PhotoFill    bool   `json:"photo_fill"` // crop to fill the screen instead of fitting
 
 	// Provider cards
 	Providers    map[string]Provider `json:"providers"`

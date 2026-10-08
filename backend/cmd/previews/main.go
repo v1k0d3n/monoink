@@ -35,7 +35,12 @@ func main() {
 		dark.Invert()
 		write(filepath.Join(*out, id+"-dark.png"), oneBit(dark.Gray))
 	}
-	fmt.Printf("rendered %d screens (light and dark) to %s\n", len(ids), *out)
+	// Variants of a screen with a non-default setting.
+	fill := screens.SampleData()
+	fill.PhotoFill = true
+	write(filepath.Join(*out, "photo-fill.png"), oneBit(screens.Photo(fill).Gray))
+
+	fmt.Printf("rendered %d screens (light and dark) and variants to %s\n", len(ids), *out)
 }
 
 // oneBit thresholds to exactly what the panel shows, which also keeps the

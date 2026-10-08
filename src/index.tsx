@@ -436,6 +436,14 @@ function Content() {
           </ButtonItem>
         </PanelSectionRow>
         <PanelSectionRow>
+          <ToggleField
+            label="Fill the screen"
+            description="Crop photos to fill the whole display instead of showing them whole."
+            checked={s.photo_fill}
+            onChange={(v) => patch({ photo_fill: v })}
+          />
+        </PanelSectionRow>
+        <PanelSectionRow>
           <SliderField
             label="Next photo every"
             value={nearestIndex(PHOTO_STEPS, s.photo_minutes)}

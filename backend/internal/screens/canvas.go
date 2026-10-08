@@ -217,13 +217,8 @@ func (c *Canvas) Picture(img image.Image, r image.Rectangle, crop bool) {
 	if sb.Empty() || r.Empty() {
 		return
 	}
-	scale := math.Min(float64(r.Dx())/float64(sb.Dx()), float64(r.Dy())/float64(sb.Dy()))
-	if crop {
-		scale = math.Max(float64(r.Dx())/float64(sb.Dx()), float64(r.Dy())/float64(sb.Dy()))
-	}
-	dw, dh := int(float64(sb.Dx())*scale+0.5), int(float64(sb.Dy())*scale+0.5)
-	min := image.Pt(r.Min.X+(r.Dx()-dw)/2, r.Min.Y+(r.Dy()-dh)/2)
-	dst := image.Rectangle{Min: min, Max: min.Add(image.Pt(dw, dh))}
+	dst := Place(sb.Size(), r, crop)
+	dw, dh := dst.Dx(), dst.Dy()
 
 	tmp := image.NewGray(image.Rect(0, 0, dw, dh))
 	xdraw.Draw(tmp, tmp.Bounds(), image.White, image.Point{}, xdraw.Src)
@@ -233,6 +228,22 @@ func (c *Canvas) Picture(img image.Image, r image.Rectangle, crop bool) {
 	clip := dst.Intersect(r)
 	xdraw.Draw(c.Gray, clip, tmp, clip.Min.Sub(dst.Min), xdraw.Src)
 	c.pictures = append(c.pictures, clip)
+}
+
+// Place returns where a picture of size src lands in r, centered and with
+// its aspect ratio kept. With crop false it fits entirely inside r
+// (letterboxed); with crop true it covers all of r and the overflow is
+// trimmed equally from both sides.
+func Place(src image.Point, r image.Rectangle, crop bool) image.Rectangle {
+	sx := float64(r.Dx()) / float64(src.X)
+	sy := float64(r.Dy()) / float64(src.Y)
+	scale := math.Min(sx, sy)
+	if crop {
+		scale = math.Max(sx, sy)
+	}
+	dw, dh := int(float64(src.X)*scale+0.5), int(float64(src.Y)*scale+0.5)
+	min := image.Pt(r.Min.X+(r.Dx()-dw)/2, r.Min.Y+(r.Dy()-dh)/2)
+	return image.Rectangle{Min: min, Max: min.Add(image.Pt(dw, dh))}
 }
 
 // Invert flips everything except photos and cover art ("dark mode"):
