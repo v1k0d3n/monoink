@@ -17,6 +17,7 @@ export interface Settings {
   game_while_playing: boolean;
   photo_dir: string;
   photo_minutes: number;
+  photo_fill: boolean;
   providers: Record<string, { approved: boolean; name?: string }>;
   cards_preempt: boolean;
   web_ui: { enabled: boolean; port: number };

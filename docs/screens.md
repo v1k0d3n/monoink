@@ -55,11 +55,13 @@ This month, with today highlighted.
 
 ## Photo frame
 
-Pictures from a folder you choose, dithered for the e-ink panel.
+Pictures from a folder you choose, dithered for the e-ink panel. By default
+each photo is shown whole (**Fit**); turn on **Fill the screen** to crop it
+to the full display instead. Modeling here: Juno Leigh, the maintainer's dog.
 
-| Light | Dark mode |
-| --- | --- |
-| ![Photo frame screen](images/screens/photo.png) | ![Photo frame screen in dark mode](images/screens/photo-dark.png) |
+| Fit (default) | Fit, dark mode | Fill the screen |
+| --- | --- | --- |
+| ![Photo frame screen](images/screens/photo.png) | ![Photo frame screen in dark mode](images/screens/photo-dark.png) | ![Photo frame screen cropped to fill](images/screens/photo-fill.png) |
 
 ## Provider card
 

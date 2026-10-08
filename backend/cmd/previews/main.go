@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -19,7 +20,16 @@ import (
 
 func main() {
 	out := flag.String("out", "../docs/images/screens", "output directory")
+	photoPath := flag.String("photo", "../docs/images/sources/juno-leigh.jpg", "sample photo for the Photo frame screen")
 	flag.Parse()
+	photo := loadPhoto(*photoPath)
+	sample := func(id string) *screens.Data {
+		d := screens.SampleData()
+		if id == "photo" {
+			d.Photo = photo
+		}
+		return d
+	}
 	if err := os.MkdirAll(*out, 0o755); err != nil {
 		fail(err)
 	}
@@ -29,13 +39,33 @@ func main() {
 	}
 	sort.Strings(ids)
 	for _, id := range ids {
-		light := screens.All[id].Render(screens.SampleData())
+		light := screens.All[id].Render(sample(id))
 		write(filepath.Join(*out, id+".png"), oneBit(light.Gray))
-		dark := screens.All[id].Render(screens.SampleData())
+		dark := screens.All[id].Render(sample(id))
 		dark.Invert()
 		write(filepath.Join(*out, id+"-dark.png"), oneBit(dark.Gray))
 	}
-	fmt.Printf("rendered %d screens (light and dark) to %s\n", len(ids), *out)
+	// Variants of a screen with a non-default setting.
+	fill := sample("photo")
+	fill.PhotoFill = true
+	write(filepath.Join(*out, "photo-fill.png"), oneBit(screens.Photo(fill).Gray))
+
+	fmt.Printf("rendered %d screens (light and dark) and variants to %s\n", len(ids), *out)
+}
+
+// loadPhoto reads the sample photo used for the Photo frame previews. It
+// must contain no metadata (EXIF/GPS); see docs/images/sources/README.md.
+func loadPhoto(path string) image.Image {
+	f, err := os.Open(path)
+	if err != nil {
+		fail(err)
+	}
+	defer f.Close()
+	img, err := jpeg.Decode(f)
+	if err != nil {
+		fail(err)
+	}
+	return img
 }
 
 // oneBit thresholds to exactly what the panel shows, which also keeps the
