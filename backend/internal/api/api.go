@@ -110,6 +110,7 @@ func (s *Server) Control() http.Handler {
 			"screen":     e.Current(),
 			"screens":    screenList(),
 			"settings":   publicSettings(e.Store.Get()),
+			"week_start": e.AutoWeekStart(),
 		})
 	})
 

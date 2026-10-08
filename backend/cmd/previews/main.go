@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/v1k0d3n/monoink/backend/internal/screens"
 )
@@ -46,6 +47,10 @@ func main() {
 		write(filepath.Join(*out, id+"-dark.png"), oneBit(dark.Gray))
 	}
 	// Variants of a screen with a non-default setting.
+	sunday := sample("calendar")
+	sunday.FirstWeekday = time.Sunday
+	write(filepath.Join(*out, "calendar-sunday.png"), oneBit(screens.Calendar(sunday).Gray))
+
 	timer := sample("game")
 	timer.GameTimer = true
 	write(filepath.Join(*out, "game-timer.png"), oneBit(screens.Game(timer).Gray))

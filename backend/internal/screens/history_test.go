@@ -128,3 +128,19 @@ func TestSessionLabel(t *testing.T) {
 		}
 	}
 }
+
+func TestCalendarAnyFirstWeekday(t *testing.T) {
+	// 1 Feb 2026 is a Sunday. With Saturday first, it sits in the second
+	// column; with Sunday first, in the first.
+	d := &Data{Now: time.Date(2026, 2, 10, 9, 0, 0, 0, time.UTC), Battery: -1}
+	colW := (W - 2*margin) / 7
+	firstRowY := header + 70 + 44 + 10
+	for first, col := range map[time.Weekday]int{time.Sunday: 0, time.Saturday: 1, time.Monday: 6} {
+		d.FirstWeekday = first
+		c := Calendar(d)
+		x0 := margin + colW*col
+		if countBlack(c, image.Rect(x0, firstRowY, x0+colW, firstRowY+20)) == 0 {
+			t.Errorf("first=%v: day 1 should be in column %d", first, col)
+		}
+	}
+}

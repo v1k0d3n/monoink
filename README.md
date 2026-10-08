@@ -125,6 +125,7 @@ Everything monoink reads or contacts is below. **[docs/privacy.md](docs/privacy.
 | `/proc/bus/input/devices` (device names and types only, never serial numbers) | game screen: whether a game controller is connected |
 | Command lines of running programs | game screen: finding the game Steam launched (only its app number and start time are kept) |
 | Steam's local files (`steamapps/*.acf`, `userdata/*/config/localconfig.vdf`, `appcache/librarycache`) | game screen: name, playtime, cached cover art |
+| Your region setting (`~/.config/plasma-localerc`, `LANG`/`LC_TIME`, `/etc/locale.conf`) | calendar: first day of the week, when set to Automatic |
 | The photo folder you choose | photo frame |
 | `api.open-meteo.com`, `geocoding-api.open-meteo.com` | only after you set a weather location |
 | `cdn.akamai.steamstatic.com` | only if you enable "Download missing cover art" |

@@ -28,6 +28,7 @@ import (
 	_ "golang.org/x/image/webp"
 
 	"github.com/v1k0d3n/monoink/backend/internal/conn"
+	"github.com/v1k0d3n/monoink/backend/internal/locale"
 	"github.com/v1k0d3n/monoink/backend/internal/render"
 	"github.com/v1k0d3n/monoink/backend/internal/screens"
 	"github.com/v1k0d3n/monoink/backend/internal/settings"
@@ -44,6 +45,7 @@ type Engine struct {
 	Steam   *steam.Client // nil when Steam isn't installed
 	Weather *weather.Client
 	DataDir string // for cached cover art
+	Home    string // user's home directory, for the desktop region setting
 	Log     *slog.Logger
 
 	mu          sync.Mutex
@@ -249,6 +251,33 @@ func (e *Engine) sampleLoop(ctx context.Context) {
 
 // ---- screen selection ------------------------------------------------------
 
+// WeekStartInfo describes the automatic first-day-of-week choice for the
+// panel: the detected region, where it came from, and the resulting day.
+type WeekStartInfo struct {
+	Region string `json:"region"`
+	Source string `json:"source"`
+	Day    string `json:"day"`
+}
+
+// AutoWeekStart detects the region from local settings (no network).
+func (e *Engine) AutoWeekStart() WeekStartInfo {
+	home := e.Home
+	region, src := locale.Detect("/", home, os.Getenv)
+	return WeekStartInfo{Region: region, Source: string(src), Day: locale.FirstWeekday(region).String()}
+}
+
+func (e *Engine) firstWeekday(s settings.Settings) time.Weekday {
+	switch s.WeekStart {
+	case "sunday":
+		return time.Sunday
+	case "saturday":
+		return time.Saturday
+	case "monday":
+		return time.Monday
+	}
+	return locale.FirstWeekday(e.AutoWeekStart().Region)
+}
+
 // activeScreen picks the screen for now. Precedence: a pinned screen
 // (the user's explicit choice) > "Next screen" override > the game while
 // one is running > a fresh provider card > the rotation.
@@ -407,7 +436,7 @@ func (e *Engine) Preview(ctx context.Context, id string) (*image.Gray, error) {
 // ---- data ------------------------------------------------------------------
 
 func (e *Engine) snapshot(ctx context.Context, now time.Time, s settings.Settings, id string) *screens.Data {
-	d := &screens.Data{Now: now, Clock24h: s.Clock24h, GameTimer: s.GameLayout == "timer", WeekStartsSun: s.WeekStartsSun, YearProgress: s.YearProgress, Battery: -1, Place: s.Weather.Place}
+	d := &screens.Data{Now: now, Clock24h: s.Clock24h, GameTimer: s.GameLayout == "timer", FirstWeekday: e.firstWeekday(s), YearProgress: s.YearProgress, Battery: -1, Place: s.Weather.Place}
 	if st := e.Conn.Status(); st.Info != nil {
 		d.Battery = st.Info.Battery
 	}

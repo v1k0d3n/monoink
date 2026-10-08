@@ -23,7 +23,7 @@ func SampleData() *Data {
 	art := sampleArt(600, 900)
 	progress := 0.42
 	return &Data{
-		Now: now, Battery: 87, YearProgress: true,
+		Now: now, Battery: 87, YearProgress: true, FirstWeekday: time.Monday,
 		Weather: &weather.Report{Fetched: now.Add(-20 * time.Minute), Temp: 18.4, FeelsLike: 17, Humidity: 60, Wind: 12, Code: 2, IsDay: true,
 			Days: []weather.Day{
 				{Date: now, Code: 2, Max: 21, Min: 11, Precip: 10},

@@ -10,7 +10,7 @@ export interface Settings {
   rotate_minutes: number;
   clock_24h: boolean;
   dark_mode: boolean;
-  week_starts_sunday: boolean;
+  week_start: "auto" | "monday" | "sunday" | "saturday";
   year_progress: boolean;
   weather: { latitude: number; longitude: number; place: string; imperial: boolean };
   allow_steam_cdn: boolean;
@@ -44,6 +44,7 @@ export interface Status {
   screen: string;
   screens: { id: string; title: string }[];
   settings: Settings;
+  week_start: { region: string; source: string; day: string };
 }
 
 export interface Candidate {

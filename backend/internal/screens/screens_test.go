@@ -31,7 +31,7 @@ func TestRenderAll(t *testing.T) {
 		data *Data
 	}{
 		{"full", sample()},
-		{"empty", &Data{Now: time.Date(2026, 2, 1, 9, 0, 0, 0, time.UTC), Battery: -1, WeekStartsSun: true, Clock24h: true,
+		{"empty", &Data{Now: time.Date(2026, 2, 1, 9, 0, 0, 0, time.UTC), Battery: -1, FirstWeekday: time.Sunday, Clock24h: true,
 			Sys: sysinfo.Snapshot{CPU: -1, GPU: -1, Mem: -1, CPUTemp: -1, GPUTemp: -1}}},
 	} {
 		for id, s := range All {
