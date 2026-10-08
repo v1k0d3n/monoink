@@ -50,11 +50,14 @@ CPU, GPU and memory load with temperatures, plus a 30-minute history graph. Upda
 
 ## Calendar
 
-This month, with today highlighted.
+This month, with today highlighted. The week starts on the day that's
+customary where you live (Sunday in the US, Monday in most of Europe,
+Saturday in much of the Middle East), worked out from your system's region
+setting; you can also choose the day yourself.
 
-| Light | Dark mode |
-| --- | --- |
-| ![Calendar screen](images/screens/calendar.png) | ![Calendar screen in dark mode](images/screens/calendar-dark.png) |
+| Monday first | Dark mode | Sunday first |
+| --- | --- | --- |
+| ![Calendar screen](images/screens/calendar.png) | ![Calendar screen in dark mode](images/screens/calendar-dark.png) | ![Calendar screen starting on Sunday](images/screens/calendar-sunday.png) |
 
 ## Photo frame
 

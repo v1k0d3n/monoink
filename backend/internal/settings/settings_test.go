@@ -90,3 +90,26 @@ func TestGameLayoutNormalized(t *testing.T) {
 		t.Errorf("timer not kept: %q", s.GameLayout)
 	}
 }
+
+func TestWeekStartMigration(t *testing.T) {
+	for _, c := range []struct {
+		file string
+		want string
+	}{
+		{`{"week_starts_sunday": true}`, "sunday"}, // explicit old choice kept
+		{`{"week_starts_sunday": false}`, "auto"},  // old default becomes Automatic
+		{`{}`, "auto"},
+		{`{"week_start": "saturday"}`, "saturday"},
+		{`{"week_start": "someday"}`, "auto"},
+	} {
+		dir := t.TempDir()
+		os.WriteFile(filepath.Join(dir, "settings.json"), []byte(c.file), 0o600)
+		st, err := Open(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := st.Get(); got.WeekStart != c.want || got.WeekStartsSun {
+			t.Errorf("%s: week_start=%q legacy=%v, want %q", c.file, got.WeekStart, got.WeekStartsSun, c.want)
+		}
+	}
+}

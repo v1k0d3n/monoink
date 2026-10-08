@@ -392,10 +392,19 @@ function Content() {
           <ToggleField label="24-hour clock" checked={s.clock_24h} onChange={(v) => patch({ clock_24h: v })} />
         </PanelSectionRow>
         <PanelSectionRow>
-          <ToggleField
-            label="Week starts on Sunday"
-            checked={s.week_starts_sunday}
-            onChange={(v) => patch({ week_starts_sunday: v })}
+          <DropdownItem
+            label="Week starts on"
+            rgOptions={[
+              {
+                data: "auto",
+                label: `Automatic (${status.week_start.day}${status.week_start.region ? `, ${status.week_start.region}` : ""})`,
+              },
+              { data: "monday", label: "Monday" },
+              { data: "sunday", label: "Sunday" },
+              { data: "saturday", label: "Saturday" },
+            ]}
+            selectedOption={s.week_start}
+            onChange={(o) => patch({ week_start: o.data })}
           />
         </PanelSectionRow>
         <PanelSectionRow>

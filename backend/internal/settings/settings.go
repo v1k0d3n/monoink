@@ -25,9 +25,10 @@ type Settings struct {
 	PinnedScreen  string   `json:"pinned_screen"`  // non-empty disables rotation
 	RotateMinutes int      `json:"rotate_minutes"` // time on each screen
 	Clock24h      bool     `json:"clock_24h"`
-	DarkMode      bool     `json:"dark_mode"` // white on black; photos unchanged
-	WeekStartsSun bool     `json:"week_starts_sunday"`
-	YearProgress  bool     `json:"year_progress"` // day/week of the year on the clock
+	DarkMode      bool     `json:"dark_mode"`                    // white on black; photos unchanged
+	WeekStart     string   `json:"week_start"`                   // "auto" (from region), "monday", "sunday", "saturday"
+	WeekStartsSun bool     `json:"week_starts_sunday,omitempty"` // deprecated: read only to migrate to WeekStart
+	YearProgress  bool     `json:"year_progress"`                // day/week of the year on the clock
 
 	// Weather (no location = weather disabled; nothing is looked up automatically)
 	Weather Weather `json:"weather"`
@@ -103,6 +104,19 @@ func (s *Settings) normalize() {
 	if s.GameLayout != "timer" {
 		s.GameLayout = "cover"
 	}
+	switch s.WeekStart {
+	case "auto", "monday", "sunday", "saturday":
+	case "":
+		// Settings from before week_start existed: an explicit "Sunday"
+		// choice is kept; otherwise the old default becomes Automatic.
+		s.WeekStart = "auto"
+		if s.WeekStartsSun {
+			s.WeekStart = "sunday"
+		}
+	default:
+		s.WeekStart = "auto"
+	}
+	s.WeekStartsSun = false
 	if s.WebUI.Port <= 0 || s.WebUI.Port > 65535 {
 		s.WebUI.Port = d.WebUI.Port
 	}

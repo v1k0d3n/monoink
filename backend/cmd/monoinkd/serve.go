@@ -46,6 +46,7 @@ func cmdServe(ctx context.Context, args []string) error {
 		Steam:   steam.New(home),
 		Weather: weather.New(),
 		DataDir: *dataDir,
+		Home:    home,
 		Log:     log.With("component", "engine"),
 	})
 	srv := &api.Server{Engine: eng, Log: log}

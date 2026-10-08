@@ -34,11 +34,11 @@ type Card struct {
 
 // Data is everything a renderer may use.
 type Data struct {
-	Now           time.Time
-	Clock24h      bool
-	WeekStartsSun bool
-	YearProgress  bool // show day/week of the year on the Clock screen
-	Battery       int  // display battery percent, -1 unknown
+	Now          time.Time
+	Clock24h     bool
+	FirstWeekday time.Weekday // first column of the calendar
+	YearProgress bool         // show day/week of the year on the Clock screen
+	Battery      int          // display battery percent, -1 unknown
 
 	Weather    *weather.Report
 	Place      string
@@ -234,11 +234,10 @@ func Calendar(d *Data) *Canvas {
 	titleBar(c, d, "Calendar", false)
 	c.Text(d.Now.Format("January 2006"), W/2, header+18, Bold, 30, Center, black)
 
-	names := []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
-	first := time.Monday
-	if d.WeekStartsSun {
-		names = append([]string{"Sun"}, names[:6]...)
-		first = time.Sunday
+	first := d.FirstWeekday
+	names := make([]string, 7)
+	for i := range names {
+		names[i] = time.Weekday((int(first) + i) % 7).String()[:3]
 	}
 	gridTop, rowH := header+70, 50
 	colW := (W - 2*margin) / 7
