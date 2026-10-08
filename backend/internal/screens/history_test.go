@@ -52,3 +52,22 @@ func TestHistoryPointClamps(t *testing.T) {
 		t.Errorf("newest zero sample should sit bottom-right, got %v,%v", x, y)
 	}
 }
+
+func TestIdleLinesStayClearOfTheFrame(t *testing.T) {
+	d := SampleData()
+	for i := range d.History {
+		d.History[i].CPU, d.History[i].GPU, d.History[i].Mem = 0, 0, 0
+	}
+	c := Performance(d)
+	// The graph frame's bottom edge is 2px thick at H-44; a 0% line must
+	// leave a clear white gap above it.
+	frameBottom := H - 44
+	gap := image.Rect(W/2, frameBottom-8, W/2+1, frameBottom-2)
+	if n := countBlack(c, gap); n != 0 {
+		t.Errorf("0%% line touches the frame (%d black pixels in the gap)", n)
+	}
+	line := image.Rect(W/2, frameBottom-16, W/2+1, frameBottom-8)
+	if countBlack(c, line) == 0 {
+		t.Error("0% line not drawn above the frame")
+	}
+}

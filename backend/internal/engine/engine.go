@@ -189,7 +189,9 @@ func (e *Engine) Run(ctx context.Context) {
 	connDone := make(chan struct{})
 	go func() { e.Conn.Run(ctx); close(connDone) }()
 	defer func() { <-connDone }()
-	go e.sampleLoop(ctx)
+	sampleDone := make(chan struct{})
+	go func() { e.sampleLoop(ctx); close(sampleDone) }()
+	defer func() { <-sampleDone }() // lets the history save before exit
 	go e.weatherLoop(ctx)
 
 	tick := time.NewTicker(time.Second)
@@ -206,18 +208,40 @@ func (e *Engine) Run(ctx context.Context) {
 }
 
 func (e *Engine) sampleLoop(ctx context.Context) {
+	// Restore the graph from before a restart, then save it every few
+	// minutes and on shutdown.
+	historyFile := filepath.Join(e.DataDir, "performance-history.json")
+	if e.DataDir != "" {
+		if err := e.Sys.LoadHistory(historyFile, time.Now()); err != nil {
+			e.Log.Warn("ignoring saved performance history", "err", err)
+		}
+	}
+	save := func() {
+		if e.DataDir == "" {
+			return
+		}
+		if err := e.Sys.SaveHistory(historyFile); err != nil {
+			e.Log.Warn("could not save performance history", "err", err)
+		}
+	}
+	defer save()
+
 	// CPU load is a delta between two samples; take a quick first pair so
 	// the first frame after startup has a value instead of "—".
 	e.Sys.Sample()
 	time.Sleep(500 * time.Millisecond)
 	t := time.NewTicker(10 * time.Second)
 	defer t.Stop()
+	saveEvery := time.NewTicker(5 * time.Minute)
+	defer saveEvery.Stop()
 	for {
 		e.Sys.Sample()
 		select {
 		case <-ctx.Done():
 			return
 		case <-t.C:
+		case <-saveEvery.C:
+			save()
 		}
 	}
 }

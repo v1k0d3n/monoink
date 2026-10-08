@@ -408,7 +408,8 @@ func Performance(d *Data) *Canvas {
 	for _, h := range d.History {
 		cpu, gpu, ram = append(cpu, h.CPU), append(gpu, h.GPU), append(ram, h.Mem)
 	}
-	in := g.Inset(6)
+	// Lift 0% off the frame so idle (near-zero) lines stay visible.
+	in := image.Rect(g.Min.X+8, g.Min.Y+8, g.Max.X-8, g.Max.Y-12)
 	plotArea(c, in, ram)
 	plotLine(c, in, cpu, false)
 	plotLine(c, in, gpu, true)
