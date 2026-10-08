@@ -15,6 +15,7 @@ export interface Settings {
   weather: { latitude: number; longitude: number; place: string; imperial: boolean };
   allow_steam_cdn: boolean;
   game_while_playing: boolean;
+  game_layout: "cover" | "timer";
   photo_dir: string;
   photo_minutes: number;
   photo_fill: boolean;

@@ -75,3 +75,18 @@ func TestEmptyScreensEncodeAsArray(t *testing.T) {
 		t.Fatalf("Get must not return nil screens: %s", b)
 	}
 }
+
+func TestGameLayoutNormalized(t *testing.T) {
+	st, _ := Open(t.TempDir())
+	if got := st.Get().GameLayout; got != "cover" {
+		t.Errorf("default layout %q", got)
+	}
+	s, _ := st.Update(func(s *Settings) { s.GameLayout = "sideways" })
+	if s.GameLayout != "cover" {
+		t.Errorf("invalid layout kept: %q", s.GameLayout)
+	}
+	s, _ = st.Update(func(s *Settings) { s.GameLayout = "timer" })
+	if s.GameLayout != "timer" {
+		t.Errorf("timer not kept: %q", s.GameLayout)
+	}
+}

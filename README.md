@@ -123,7 +123,7 @@ Everything monoink reads or contacts is below. **[docs/privacy.md](docs/privacy.
 | BlueZ (the system Bluetooth service) | always: finding and talking to the display |
 | `/proc`, `/sys` | performance screen: CPU, memory, temperatures, GPU load |
 | `/proc/bus/input/devices` (device names and types only, never serial numbers) | game screen: whether a game controller is connected |
-| Command lines of running programs | game screen: finding the game Steam launched (only its app number is kept) |
+| Command lines of running programs | game screen: finding the game Steam launched (only its app number and start time are kept) |
 | Steam's local files (`steamapps/*.acf`, `userdata/*/config/localconfig.vdf`, `appcache/librarycache`) | game screen: name, playtime, cached cover art |
 | The photo folder you choose | photo frame |
 | `api.open-meteo.com`, `geocoding-api.open-meteo.com` | only after you set a weather location |

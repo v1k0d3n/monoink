@@ -69,3 +69,44 @@ func TestCurrentGame(t *testing.T) {
 		t.Fatalf("running game wrong: %+v", g)
 	}
 }
+
+func TestParseStartTicks(t *testing.T) {
+	// Field 22 is starttime. Program names can contain spaces and ')'.
+	rest := " S 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 424242 21 22"
+	for _, comm := range []string{"(game.exe)", "(My Game (DX12))", "(a ) b)"} {
+		got, ok := parseStartTicks("1234 " + comm + rest)
+		if !ok || got != 424242 {
+			t.Errorf("comm %q: got %d ok=%v", comm, got, ok)
+		}
+	}
+	for _, bad := range []string{"", "1234 game S 1 2", "1234 (x) S 1 2 3"} {
+		if _, ok := parseStartTicks(bad); ok {
+			t.Errorf("accepted malformed stat %q", bad)
+		}
+	}
+}
+
+func TestRunningGameSession(t *testing.T) {
+	root, proc := t.TempDir(), t.TempDir()
+	c := &Client{Root: root, Proc: proc}
+	write(t, filepath.Join(root, "steamapps", "appmanifest_100.acf"), `"AppState" { "name" "Old Game" }`)
+	write(t, filepath.Join(proc, "stat"), "cpu  1 2 3 4\nbtime 1700000000\nprocesses 10\n")
+	write(t, filepath.Join(proc, "4242", "cmdline"), "reaper\x00SteamLaunch\x00AppId=100\x00--\x00game.exe\x00")
+	// Started 3600.5 s after boot (360050 ticks at 100 Hz).
+	write(t, filepath.Join(proc, "4242", "stat"), "4242 (reaper) S 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 360050 0 0")
+
+	g, ok := c.Current()
+	if !ok || !g.Running {
+		t.Fatalf("running game not found: %+v", g)
+	}
+	want := time.Unix(1700000000, 0).Add(3600*time.Second + 500*time.Millisecond)
+	if !g.Started.Equal(want) {
+		t.Fatalf("started %v, want %v", g.Started, want)
+	}
+	if s := g.Session(want.Add(83 * time.Minute)); s != 83*time.Minute {
+		t.Errorf("session %v", s)
+	}
+	if s := (Game{Running: false, Started: want}).Session(want.Add(time.Hour)); s != 0 {
+		t.Errorf("a game that isn't running has no session, got %v", s)
+	}
+}

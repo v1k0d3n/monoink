@@ -46,6 +46,10 @@ func main() {
 		write(filepath.Join(*out, id+"-dark.png"), oneBit(dark.Gray))
 	}
 	// Variants of a screen with a non-default setting.
+	timer := sample("game")
+	timer.GameTimer = true
+	write(filepath.Join(*out, "game-timer.png"), oneBit(screens.Game(timer).Gray))
+
 	fill := sample("photo")
 	fill.PhotoFill = true
 	write(filepath.Join(*out, "photo-fill.png"), oneBit(screens.Photo(fill).Gray))

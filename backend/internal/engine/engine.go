@@ -298,12 +298,11 @@ func (e *Engine) step(ctx context.Context) {
 		return
 	}
 	now := time.Now()
-	playing := false
-	if s.GameWhilePlaying && s.PinnedScreen == "" {
-		if g := e.currentGame(now); g != nil && g.Running {
-			playing = true
-		}
+	gameRunning := false
+	if g := e.currentGame(now); g != nil && g.Running { // cached; cheap
+		gameRunning = true
 	}
+	playing := gameRunning && s.GameWhilePlaying && s.PinnedScreen == ""
 	id := e.activeScreen(now, s, playing)
 	scr := screens.All[id]
 
@@ -313,7 +312,11 @@ func (e *Engine) step(ctx context.Context) {
 		return
 	}
 	photoDue := id == "photo" && now.Sub(e.photoAt) >= time.Duration(s.PhotoMinutes)*time.Minute
-	need := e.force || id != e.current || due(scr.Cadence, e.renderAt, now) || photoDue
+	cadence := scr.Cadence
+	if id == "game" && gameRunning {
+		cadence = time.Minute // keep the session time current
+	}
+	need := e.force || id != e.current || due(cadence, e.renderAt, now) || photoDue
 	if id == "game" && e.Sys != nil {
 		// Redraw as soon as a controller connects or disconnects.
 		if n := e.Sys.Controllers(); n != e.controllers {
@@ -404,7 +407,7 @@ func (e *Engine) Preview(ctx context.Context, id string) (*image.Gray, error) {
 // ---- data ------------------------------------------------------------------
 
 func (e *Engine) snapshot(ctx context.Context, now time.Time, s settings.Settings, id string) *screens.Data {
-	d := &screens.Data{Now: now, Clock24h: s.Clock24h, WeekStartsSun: s.WeekStartsSun, YearProgress: s.YearProgress, Battery: -1, Place: s.Weather.Place}
+	d := &screens.Data{Now: now, Clock24h: s.Clock24h, GameTimer: s.GameLayout == "timer", WeekStartsSun: s.WeekStartsSun, YearProgress: s.YearProgress, Battery: -1, Place: s.Weather.Place}
 	if st := e.Conn.Status(); st.Info != nil {
 		d.Battery = st.Info.Battery
 	}

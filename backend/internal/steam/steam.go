@@ -20,7 +20,16 @@ type Game struct {
 	Running    bool
 	Playtime   time.Duration // total
 	LastPlayed time.Time
-	ArtPath    string // local portrait cover, if cached
+	ArtPath    string    // local portrait cover, if cached
+	Started    time.Time // when the running game was launched (zero if not running or unknown)
+}
+
+// Session returns how long the game has been running at now, or 0.
+func (g Game) Session(now time.Time) time.Duration {
+	if !g.Running || g.Started.IsZero() || now.Before(g.Started) {
+		return 0
+	}
+	return now.Sub(g.Started)
 }
 
 // Client locates Steam's files under a home directory.
@@ -44,9 +53,17 @@ var appIDArg = regexp.MustCompile(`(?:^|\x00)AppId=(\d+)(?:\x00|$)`)
 
 // RunningAppID returns the app launched through Steam's reaper, if any.
 func (c *Client) RunningAppID() (int, bool) {
+	id, _, ok := c.runningGame()
+	return id, ok
+}
+
+// runningGame finds the process Steam launched a game with ("SteamLaunch
+// AppId=N" in its command line). Only the app number and the process ID
+// are kept.
+func (c *Client) runningGame() (appID, pid int, ok bool) {
 	entries, err := os.ReadDir(c.Proc)
 	if err != nil {
-		return 0, false
+		return 0, 0, false
 	}
 	for _, e := range entries {
 		if e.Name()[0] < '0' || e.Name()[0] > '9' {
@@ -58,11 +75,68 @@ func (c *Client) RunningAppID() (int, bool) {
 		}
 		if m := appIDArg.FindSubmatch(cmd); m != nil {
 			if id, err := strconv.Atoi(string(m[1])); err == nil && id > 0 {
-				return id, true
+				p, _ := strconv.Atoi(e.Name())
+				return id, p, true
 			}
 		}
 	}
-	return 0, false
+	return 0, 0, false
+}
+
+// clockTicks is USER_HZ, the unit of process start times in /proc. It is
+// 100 on every Linux architecture SteamOS runs on, and reading it via
+// sysconf would need cgo.
+const clockTicks = 100
+
+// processStart returns when process pid started, from its start time in
+// /proc/<pid>/stat (clock ticks since boot) plus the boot time in
+// /proc/stat.
+func (c *Client) processStart(pid int) (time.Time, bool) {
+	stat, err := os.ReadFile(filepath.Join(c.Proc, strconv.Itoa(pid), "stat"))
+	if err != nil {
+		return time.Time{}, false
+	}
+	ticks, ok := parseStartTicks(string(stat))
+	if !ok {
+		return time.Time{}, false
+	}
+	boot, ok := c.bootTime()
+	if !ok {
+		return time.Time{}, false
+	}
+	return boot.Add(time.Duration(ticks) * time.Second / clockTicks), true
+}
+
+// parseStartTicks extracts field 22 (starttime) of /proc/<pid>/stat. The
+// second field is the program name in parentheses, which may itself
+// contain spaces and parentheses, so fields are counted from the last ')'.
+func parseStartTicks(stat string) (uint64, bool) {
+	i := strings.LastIndexByte(stat, ')')
+	if i < 0 {
+		return 0, false
+	}
+	fields := strings.Fields(stat[i+1:]) // fields 3 onward
+	const startField = 22 - 3
+	if len(fields) <= startField {
+		return 0, false
+	}
+	v, err := strconv.ParseUint(fields[startField], 10, 64)
+	return v, err == nil
+}
+
+func (c *Client) bootTime() (time.Time, bool) {
+	data, err := os.ReadFile(filepath.Join(c.Proc, "stat"))
+	if err != nil {
+		return time.Time{}, false
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		if v, ok := strings.CutPrefix(line, "btime "); ok {
+			if secs, err := strconv.ParseInt(strings.TrimSpace(v), 10, 64); err == nil {
+				return time.Unix(secs, 0), true
+			}
+		}
+	}
+	return time.Time{}, false
 }
 
 // libraries returns every steamapps directory.
@@ -173,7 +247,7 @@ func (c *Client) ArtPath(appID int) string {
 // played one. ok is false if nothing is known.
 func (c *Client) Current() (Game, bool) {
 	apps := c.localConfig()
-	running, isRunning := c.RunningAppID()
+	running, pid, isRunning := c.runningGame()
 	id := running
 	if !isRunning {
 		installed := c.installed()
@@ -194,6 +268,11 @@ func (c *Client) Current() (Game, bool) {
 		return Game{}, false
 	}
 	g := Game{AppID: id, Running: isRunning, Name: c.Name(id), ArtPath: c.ArtPath(id)}
+	if isRunning {
+		if t, ok := c.processStart(pid); ok {
+			g.Started = t
+		}
+	}
 	if n := apps.Child(strconv.Itoa(id)); n != nil {
 		mins, _ := strconv.Atoi(n.Str("Playtime"))
 		g.Playtime = time.Duration(mins) * time.Minute
