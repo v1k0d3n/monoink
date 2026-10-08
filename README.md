@@ -6,11 +6,11 @@ your own photos on the 5.83" e-paper display, configured entirely from
 Gaming Mode. No terminal, no sudo, no tracking.
 
 <p align="center">
-  <img src="docs/images/screen-dashboard.png" width="45%" alt="Dashboard screen">
-  <img src="docs/images/screen-game.png" width="45%" alt="Game screen">
+  <img src="docs/images/screens/dashboard.png" width="45%" alt="Dashboard screen">
+  <img src="docs/images/screens/game.png" width="45%" alt="Game screen">
   <br>
-  <img src="docs/images/screen-weather.png" width="45%" alt="Weather screen">
-  <img src="docs/images/screen-clock.png" width="45%" alt="Clock screen">
+  <img src="docs/images/screens/weather.png" width="45%" alt="Weather screen">
+  <img src="docs/images/screens/clock.png" width="45%" alt="Clock screen">
 </p>
 
 > **Status: v0.1, first public release.** Tested on a Steam Machine running a
@@ -132,6 +132,7 @@ Everything monoink reads or contacts:
 ## Documentation
 
 - [Installing](docs/install.md): step-by-step install, update and troubleshooting.
+- [Screens](docs/screens.md): every screen, in light and dark mode.
 - [Custom cards](docs/providers.md): show your own information on the display.
 - [Development](docs/development.md): building, testing, CI and releases.
 - [Contributors](docs/contributors.md): who built this and how to help.

@@ -373,7 +373,7 @@ func (e *Engine) Preview(ctx context.Context, id string) (*image.Gray, error) {
 // ---- data ------------------------------------------------------------------
 
 func (e *Engine) snapshot(ctx context.Context, now time.Time, s settings.Settings, id string) *screens.Data {
-	d := &screens.Data{Now: now, Clock24h: s.Clock24h, WeekStartsSun: s.WeekStartsSun, Battery: -1, Place: s.Weather.Place}
+	d := &screens.Data{Now: now, Clock24h: s.Clock24h, WeekStartsSun: s.WeekStartsSun, YearProgress: s.YearProgress, Battery: -1, Place: s.Weather.Place}
 	if st := e.Conn.Status(); st.Info != nil {
 		d.Battery = st.Info.Battery
 	}

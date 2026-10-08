@@ -27,6 +27,7 @@ type Settings struct {
 	Clock24h      bool     `json:"clock_24h"`
 	DarkMode      bool     `json:"dark_mode"` // white on black; photos unchanged
 	WeekStartsSun bool     `json:"week_starts_sunday"`
+	YearProgress  bool     `json:"year_progress"` // day/week of the year on the clock
 
 	// Weather (no location = weather disabled; nothing is looked up automatically)
 	Weather Weather `json:"weather"`
@@ -79,6 +80,7 @@ func Defaults() Settings {
 		Screens:          []string{"dashboard", "clock", "game", "calendar"},
 		RotateMinutes:    10,
 		GameWhilePlaying: true,
+		YearProgress:     true,
 		PhotoMinutes:     15,
 		Providers:        map[string]Provider{},
 		WebUI:            WebUI{Port: 39063},
