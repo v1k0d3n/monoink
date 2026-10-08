@@ -85,12 +85,15 @@ before merging.
 
 ## Releasing
 
-1. Update `"version"` in `package.json` (e.g. `0.2.0`) and commit.
-2. Tag and push:
+1. In a `release/vX.Y.Z` pull request, update `"version"` in `package.json`
+   and add `docs/release-notes/vX.Y.Z.md` with the highlights (it becomes the
+   top of the GitHub release, above the automatic list of merged pull
+   requests). Merge it.
+2. Tag the merged commit on `main` and push the tag:
 
    ```bash
    git tag v0.2.0
-   git push origin main v0.2.0
+   git push origin v0.2.0
    ```
 
 3. The Release workflow publishes the zip. Check the Releases page.
