@@ -16,9 +16,12 @@ Gaming Mode. No terminal, no sudo, no tracking.
   <img src="docs/images/screens/photo-fill.png" width="45%" alt="Photo frame screen, photo filling the display">
 </p>
 
-> **Status: v0.1, first public release.** Tested on a Steam Machine running a
-> SteamOS preview build. It should work on any SteamOS device with Decky
-> Loader (including Steam Deck), but those aren't tested yet. Reports welcome.
+> **Status: actively developed.** See
+> [Releases](https://github.com/v1k0d3n/monoink/releases) for the latest
+> version and what's new. Tested on a Steam Machine running a SteamOS preview
+> build. It should work on any SteamOS device with Decky Loader (including
+> Steam Deck), but those aren't tested yet.
+> [Reports welcome](https://github.com/v1k0d3n/monoink/issues/new/choose).
 >
 > monoink is an independent community project. It is not affiliated with or
 > endorsed by JSAUX.
