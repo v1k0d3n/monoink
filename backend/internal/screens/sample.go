@@ -18,7 +18,7 @@ func SampleData() *Data {
 	now := time.Date(2026, 10, 7, 14, 5, 0, 0, time.UTC)
 	hist := make([]sysinfo.Snapshot, 30)
 	for i := range hist {
-		hist[i] = sysinfo.Snapshot{CPU: float64(20 + i*2), GPU: float64(60 - i)}
+		hist[i] = sysinfo.Snapshot{CPU: float64(20 + i*2), GPU: float64(60 - i), Mem: 48 + 6*math.Sin(float64(i)/5)}
 	}
 	art := sampleArt(600, 900)
 	progress := 0.42

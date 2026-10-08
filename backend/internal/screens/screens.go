@@ -400,44 +400,105 @@ func Performance(d *Data) *Canvas {
 		y += 62
 	}
 
-	// 30-minute history graph for CPU (solid) and GPU (outline).
+	// 30-minute history: RAM as a dotted area, CPU as a solid line, GPU as
+	// a line with hollow markers, so all three read clearly in 1-bit.
 	g := image.Rect(margin, y+16, W-margin, H-44)
 	c.Box(g, 2, black)
-	c.Text("Last 30 min · CPU ■  GPU □", margin, H-34, Regular, 16, Left, black)
+	var cpu, gpu, ram []float64
+	for _, h := range d.History {
+		cpu, gpu, ram = append(cpu, h.CPU), append(gpu, h.GPU), append(ram, h.Mem)
+	}
+	in := g.Inset(6)
+	plotArea(c, in, ram)
+	plotLine(c, in, cpu, false)
+	plotLine(c, in, gpu, true)
+
+	x := c.Text("Last 30 min", margin, H-34, Regular, 16, Left, black) + margin + 18
+	for _, item := range []struct {
+		label  string
+		swatch func(x, y int)
+	}{
+		{"CPU", func(x, y int) { c.Line(float64(x), float64(y), float64(x+22), float64(y), 3, black) }},
+		{"GPU", func(x, y int) {
+			c.Line(float64(x), float64(y), float64(x+22), float64(y), 3, black)
+			c.Disc(float64(x+11), float64(y), 4, black)
+			c.Disc(float64(x+11), float64(y), 2, white)
+		}},
+		{"RAM", func(x, y int) {
+			r := image.Rect(x, y-6, x+22, y+6)
+			dots(c, r)
+			c.Box(r, 1, black)
+		}},
+	} {
+		item.swatch(x, H-26)
+		x += 28 + c.Text(item.label, x+28, H-34, Regular, 16, Left, black) + 16
+	}
 	if up := s.Uptime; up > 0 {
 		c.Text("Up "+durationLabel(up), W-margin, H-34, Regular, 16, Right, black)
 	}
-	plot := func(vals []float64, solid bool) {
-		if len(vals) < 2 {
-			return
-		}
-		in := g.Inset(6)
-		step := float64(in.Dx()) / float64(29)
-		prevX, prevY := -1.0, -1.0
-		for i, v := range vals {
-			if v < 0 {
-				prevX = -1
-				continue
-			}
-			x := float64(in.Max.X) - float64(len(vals)-1-i)*step
-			y := float64(in.Max.Y) - v/100*float64(in.Dy())
-			if prevX >= 0 {
-				c.Line(prevX, prevY, x, y, 3, black)
-			}
-			if !solid {
-				c.Disc(x, y, 4, black)
-				c.Disc(x, y, 2, white)
-			}
-			prevX, prevY = x, y
-		}
-	}
-	var cpu, gpu []float64
-	for _, h := range d.History {
-		cpu, gpu = append(cpu, h.CPU), append(gpu, h.GPU)
-	}
-	plot(cpu, true)
-	plot(gpu, false)
 	return c
+}
+
+// historyPoint maps sample i of n (newest last, 30 per graph) to a point
+// in r, right-aligned so a short history grows in from the right edge.
+func historyPoint(r image.Rectangle, i, n int, v float64) (float64, float64) {
+	step := float64(r.Dx()) / 29
+	x := float64(r.Max.X) - float64(n-1-i)*step
+	y := float64(r.Max.Y) - math.Min(math.Max(v, 0), 100)/100*float64(r.Dy())
+	return x, y
+}
+
+// plotLine draws a history series; markers adds hollow circles at each
+// sample. Negative values (unknown) break the line.
+func plotLine(c *Canvas, r image.Rectangle, vals []float64, markers bool) {
+	if len(vals) < 2 {
+		return
+	}
+	prevX, prevY := -1.0, -1.0
+	for i, v := range vals {
+		if v < 0 {
+			prevX = -1
+			continue
+		}
+		x, y := historyPoint(r, i, len(vals), v)
+		if prevX >= 0 {
+			c.Line(prevX, prevY, x, y, 3, black)
+		}
+		if markers {
+			c.Disc(x, y, 4, black)
+			c.Disc(x, y, 2, white)
+		}
+		prevX, prevY = x, y
+	}
+}
+
+// plotArea shades the region under a history series with sparse dots.
+func plotArea(c *Canvas, r image.Rectangle, vals []float64) {
+	for i := 1; i < len(vals); i++ {
+		if vals[i-1] < 0 || vals[i] < 0 {
+			continue
+		}
+		x0, y0 := historyPoint(r, i-1, len(vals), vals[i-1])
+		x1, y1 := historyPoint(r, i, len(vals), vals[i])
+		for x := int(math.Ceil(x0)); x <= int(x1) && x < r.Max.X; x++ {
+			t := (float64(x) - x0) / (x1 - x0)
+			top := int(math.Ceil(y0 + t*(y1-y0)))
+			dots(c, image.Rect(x, top, x+1, r.Max.Y))
+		}
+	}
+}
+
+// dots fills r with a sparse, regular dot pattern (one pixel in eight),
+// light enough for lines drawn over it to stay readable.
+func dots(c *Canvas, r image.Rectangle) {
+	r = r.Intersect(c.Bounds())
+	for y := r.Min.Y; y < r.Max.Y; y++ {
+		for x := r.Min.X; x < r.Max.X; x++ {
+			if x%4 == 0 && y%2 == 0 && (x/4+y/2)%2 == 0 {
+				c.SetGray(x, y, black)
+			}
+		}
+	}
 }
 
 // ---- game ----------------------------------------------------------------
