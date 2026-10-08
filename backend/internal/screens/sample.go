@@ -35,7 +35,7 @@ func SampleData() *Data {
 		Place:       "Example City",
 		Sys:         sysinfo.Snapshot{CPU: 37, GPU: 81, Mem: 54, MemUsed: 8.6e9, MemTotal: 16e9, CPUTemp: 61, GPUTemp: 70, Uptime: 5 * time.Hour},
 		History:     hist,
-		Game:        &steam.Game{AppID: 1, Name: "An Exceptionally Long Game Title: Definitive Edition", Running: true, Playtime: 125 * time.Hour},
+		Game:        &steam.Game{AppID: 1, Name: "An Exceptionally Long Game Title: Definitive Edition", Running: true, Playtime: 125 * time.Hour, Started: now.Add(-83 * time.Minute)},
 		GameArt:     art,
 		Controllers: 1,
 		Photo:       sampleArt(900, 600),

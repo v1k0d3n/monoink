@@ -31,11 +31,14 @@ Current conditions and a 5-day forecast from Open-Meteo, for the location you ch
 
 ## Game
 
-The game you're playing (or last played) with its cover art and playtime.
+The game you're playing (or last played) with its cover art, this session's
+time and total playtime. A gamepad icon appears next to the title while a
+controller is connected. Choose **Session timer** under *Game screen layout*
+for a large clock of how long you've been playing.
 
-| Light | Dark mode |
-| --- | --- |
-| ![Game screen](images/screens/game.png) | ![Game screen in dark mode](images/screens/game-dark.png) |
+| Cover art (default) | Dark mode | Session timer |
+| --- | --- | --- |
+| ![Game screen](images/screens/game.png) | ![Game screen in dark mode](images/screens/game-dark.png) | ![Game screen with the session timer layout](images/screens/game-timer.png) |
 
 ## Performance
 

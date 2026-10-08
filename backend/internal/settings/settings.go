@@ -33,8 +33,9 @@ type Settings struct {
 	Weather Weather `json:"weather"`
 
 	// Game screen
-	AllowSteamCDN    bool `json:"allow_steam_cdn"`    // fetch missing cover art from Steam's CDN
-	GameWhilePlaying bool `json:"game_while_playing"` // switch to the game screen while one runs
+	AllowSteamCDN    bool   `json:"allow_steam_cdn"`    // fetch missing cover art from Steam's CDN
+	GameWhilePlaying bool   `json:"game_while_playing"` // switch to the game screen while one runs
+	GameLayout       string `json:"game_layout"`        // "cover" (default) or "timer"
 
 	// Photo frame
 	PhotoDir     string `json:"photo_dir"`
@@ -98,6 +99,9 @@ func (s *Settings) normalize() {
 	}
 	if s.Providers == nil {
 		s.Providers = map[string]Provider{}
+	}
+	if s.GameLayout != "timer" {
+		s.GameLayout = "cover"
 	}
 	if s.WebUI.Port <= 0 || s.WebUI.Port > 65535 {
 		s.WebUI.Port = d.WebUI.Port

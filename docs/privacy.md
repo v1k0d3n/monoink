@@ -15,6 +15,7 @@ without reading the code.
 | `/sys/class/hwmon`, `/sys/class/drm/*/device/gpu_busy_percent`, `/sys/class/power_supply` | Performance screen | Temperatures, GPU load, and the system battery if there is one (peripheral batteries such as mice are ignored). |
 | `/proc/bus/input/devices` | Game screen controller icon | Device names, types and system paths only. **Serial numbers are never read**, and input devices are never opened (see below). |
 | Command lines of running programs (`/proc/<pid>/cmdline`) | Game screen: which game is running | Each command line is checked for Steam's `SteamLaunch AppId=` marker. Only that number is kept; nothing else is stored or logged. |
+| Start time of that one process (`/proc/<pid>/stat`) and the boot time (`/proc/stat`) | Game screen and dashboard: session time | Read only for the process Steam launched the game with, to work out when the session began. Not stored. |
 | Steam's local files: `steamapps/libraryfolders.vdf`, `steamapps/appmanifest_*.acf`, `userdata/*/config/localconfig.vdf`, `appcache/librarycache/` | Game screen | Game names, total playtime and last-played time, and cover art Steam has already cached. `localconfig.vdf` contains other Steam settings too; only the per-game playtime and last-played values are used. |
 | The photo folder you choose | Photo frame | Image files in that one folder (not subfolders). Your files are only read, never changed. |
 

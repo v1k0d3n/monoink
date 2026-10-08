@@ -344,6 +344,18 @@ function Content() {
               />
             </PanelSectionRow>
             <PanelSectionRow>
+              <DropdownItem
+                label="Game screen layout"
+                description="Timer shows a large clock of how long you've been playing."
+                rgOptions={[
+                  { data: "cover", label: "Cover art" },
+                  { data: "timer", label: "Session timer" },
+                ]}
+                selectedOption={s.game_layout}
+                onChange={(o) => patch({ game_layout: o.data })}
+              />
+            </PanelSectionRow>
+            <PanelSectionRow>
               <SliderField
                 label="Time per screen"
                 value={nearestIndex(ROTATE_STEPS, s.rotate_minutes)}

@@ -49,7 +49,8 @@ type Data struct {
 
 	Game        *steam.Game
 	GameArt     image.Image
-	Controllers int // external game controllers connected
+	Controllers int  // external game controllers connected
+	GameTimer   bool // Game screen uses the large session-timer layout
 
 	Photo     image.Image
 	PhotoName string
@@ -536,6 +537,11 @@ func Game(d *Data) *Canvas {
 		message(c, header, "No recent games", "Play something on Steam and it will show up here.")
 		return c
 	}
+	session := g.Session(d.Now)
+	if d.GameTimer && session > 0 {
+		gameTimer(c, d, session)
+		return c
+	}
 	art := image.Rect(margin, header+18, margin+272, H-20)
 	textX := margin
 	if d.GameArt != nil {
@@ -562,6 +568,9 @@ func Game(d *Data) *Canvas {
 		c.Text(value, textX, y+26, Bold, 30, Left, black)
 		y += 76
 	}
+	if session > 0 {
+		stat("This session", sessionLabel(session))
+	}
 	if g.Playtime > 0 {
 		stat("Total playtime", durationLabel(g.Playtime))
 	}
@@ -569,6 +578,37 @@ func Game(d *Data) *Canvas {
 		stat("Last played", g.LastPlayed.Format("Mon, Jan 2"))
 	}
 	return c
+}
+
+// sessionLabel describes a session's length, avoiding "0m" in its first
+// minute.
+func sessionLabel(d time.Duration) string {
+	if d < time.Minute {
+		return "Just started"
+	}
+	return durationLabel(d)
+}
+
+// sessionClock formats a session as H:MM for the large timer.
+func sessionClock(d time.Duration) string {
+	m := int(d.Minutes())
+	return fmt.Sprintf("%d:%02d", m/60, m%60)
+}
+
+// gameTimer is the Timer layout: a large session clock with the game's
+// name and total playtime, for glancing at while playing.
+func gameTimer(c *Canvas, d *Data, session time.Duration) {
+	g := d.Game
+	c.Text(sessionClock(session), W/2, header+28, Bold, 150, Center, black)
+	c.Text("THIS SESSION", W/2, header+200, Bold, 18, Center, black)
+	y := header + 248
+	for _, line := range Wrap(g.Name, Bold, 30, W-2*margin, 2) {
+		c.Text(line, W/2, y, Bold, 30, Center, black)
+		y += 40
+	}
+	if g.Playtime > 0 {
+		c.Text(durationLabel(g.Playtime)+" total playtime", W/2, H-44, Regular, 20, Center, black)
+	}
 }
 
 // ---- photo ---------------------------------------------------------------
@@ -661,9 +701,20 @@ func Dashboard(d *Data) *Canvas {
 		}
 		c.Text(label, x, y+4, Bold, 14, Left, black)
 		yy := y + 30
-		for _, l := range Wrap(g.Name, Bold, 22, maxW, 4) {
+		session := g.Session(d.Now)
+		lines := 4
+		if session > 0 {
+			lines = 2 // leave room for the session lines
+		}
+		for _, l := range Wrap(g.Name, Bold, 22, maxW, lines) {
 			c.Text(l, x, yy, Bold, 22, Left, black)
 			yy += 30
+		}
+		if session > 0 {
+			// Label and value on separate lines: the column is too narrow
+			// for "1h 23m this session" on one.
+			c.Text("This session", x, H-104, Regular, 14, Left, black)
+			c.Text(sessionLabel(session), x, H-84, Bold, 22, Left, black)
 		}
 		if g.Playtime > 0 {
 			c.Text(durationLabel(g.Playtime)+" total", x, H-44, Regular, 18, Left, black)

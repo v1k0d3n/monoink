@@ -3,6 +3,7 @@ package screens
 import (
 	"image"
 	"testing"
+	"time"
 )
 
 func countBlack(c *Canvas, r image.Rectangle) int {
@@ -69,5 +70,61 @@ func TestIdleLinesStayClearOfTheFrame(t *testing.T) {
 	line := image.Rect(W/2, frameBottom-16, W/2+1, frameBottom-8)
 	if countBlack(c, line) == 0 {
 		t.Error("0% line not drawn above the frame")
+	}
+}
+
+func TestSessionClock(t *testing.T) {
+	for d, want := range map[time.Duration]string{
+		0:                            "0:00",
+		59 * time.Second:             "0:00",
+		83 * time.Minute:             "1:23",
+		10*time.Hour + 5*time.Minute: "10:05",
+	} {
+		if got := sessionClock(d); got != want {
+			t.Errorf("sessionClock(%v) = %q, want %q", d, got, want)
+		}
+	}
+}
+
+func TestGameLayouts(t *testing.T) {
+	d := SampleData() // running, 83 minutes into the session
+	cover := Game(d)
+	d.GameTimer = true
+	timer := Game(d)
+	if countBlack(cover, cover.Bounds()) == countBlack(timer, timer.Bounds()) {
+		t.Fatal("timer layout should differ from the cover layout")
+	}
+	if len(timer.pictures) != 0 {
+		t.Error("timer layout shouldn't draw cover art")
+	}
+	// With no game running there's no session: the timer layout falls back
+	// to the cover layout (last played).
+	d.Game.Running = false
+	if got := Game(d); len(got.pictures) == 0 {
+		t.Error("timer layout without a running game should fall back to cover")
+	}
+}
+
+func TestDashboardGameColumnStaysLeftOfDivider(t *testing.T) {
+	d := SampleData()
+	c := Dashboard(d)
+	// The divider is a 2px line at W/2-1..W/2+1; nothing from the game
+	// column may touch the white gutter just left of it.
+	gutter := image.Rect(W/2-8, 214, W/2-2, H-20)
+	if n := countBlack(c, gutter); n != 0 {
+		t.Fatalf("game column overflows into the divider gutter (%d px)", n)
+	}
+}
+
+func TestSessionLabel(t *testing.T) {
+	for d, want := range map[time.Duration]string{
+		10 * time.Second: "Just started",
+		59 * time.Second: "Just started",
+		time.Minute:      "1m",
+		83 * time.Minute: "1h 23m",
+	} {
+		if got := sessionLabel(d); got != want {
+			t.Errorf("sessionLabel(%v) = %q, want %q", d, got, want)
+		}
 	}
 }
