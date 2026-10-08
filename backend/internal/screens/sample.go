@@ -32,13 +32,14 @@ func SampleData() *Data {
 				{Date: now.AddDate(0, 0, 3), Code: 73, Max: 3, Min: -2},
 				{Date: now.AddDate(0, 0, 4), Code: 45, Max: 12, Min: 6},
 			}},
-		Place:   "Example City",
-		Sys:     sysinfo.Snapshot{CPU: 37, GPU: 81, Mem: 54, MemUsed: 8.6e9, MemTotal: 16e9, CPUTemp: 61, GPUTemp: 70, Uptime: 5 * time.Hour},
-		History: hist,
-		Game:    &steam.Game{AppID: 1, Name: "An Exceptionally Long Game Title: Definitive Edition", Running: true, Playtime: 125 * time.Hour},
-		GameArt: art,
-		Photo:   sampleArt(900, 600),
-		Card:    &Card{Provider: "example", Title: "Build pipeline", Lines: []string{"main: passing", "release: 3 jobs queued"}, Progress: &progress, Updated: now},
+		Place:       "Example City",
+		Sys:         sysinfo.Snapshot{CPU: 37, GPU: 81, Mem: 54, MemUsed: 8.6e9, MemTotal: 16e9, CPUTemp: 61, GPUTemp: 70, Uptime: 5 * time.Hour},
+		History:     hist,
+		Game:        &steam.Game{AppID: 1, Name: "An Exceptionally Long Game Title: Definitive Edition", Running: true, Playtime: 125 * time.Hour},
+		GameArt:     art,
+		Controllers: 1,
+		Photo:       sampleArt(900, 600),
+		Card:        &Card{Provider: "example", Title: "Build pipeline", Lines: []string{"main: passing", "release: 3 jobs queued"}, Progress: &progress, Updated: now},
 	}
 }
 

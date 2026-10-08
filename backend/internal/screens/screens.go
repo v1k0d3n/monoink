@@ -47,8 +47,9 @@ type Data struct {
 	Sys     sysinfo.Snapshot
 	History []sysinfo.Snapshot
 
-	Game    *steam.Game
-	GameArt image.Image
+	Game        *steam.Game
+	GameArt     image.Image
+	Controllers int // external game controllers connected
 
 	Photo     image.Image
 	PhotoName string
@@ -111,6 +112,22 @@ func titleBar(c *Canvas, d *Data, title string, withTime bool) {
 	}
 	c.Text(label, right, 18, Medium, 20, Right, black)
 	c.Fill(image.Rect(margin, header-3, W-margin, header), black)
+}
+
+// gamepad draws a small controller icon with its top-left at (x, y) and
+// returns its width.
+func gamepad(c *Canvas, x, y int) int {
+	fx, fy := float64(x), float64(y)
+	// Body: two round grips joined by a bar.
+	c.Disc(fx+9, fy+12, 9, black)
+	c.Disc(fx+31, fy+12, 9, black)
+	c.Fill(image.Rect(x+9, y+3, x+31, y+17), black)
+	// D-pad on the left, two buttons on the right.
+	c.Fill(image.Rect(x+6, y+10, x+14, y+13), white)
+	c.Fill(image.Rect(x+8, y+8, x+11, y+16), white)
+	c.Disc(fx+29, fy+9, 1.8, white)
+	c.Disc(fx+33, fy+13, 1.8, white)
+	return 40
 }
 
 // battery draws a small battery gauge ending at x and returns its width.
@@ -507,6 +524,13 @@ func dots(c *Canvas, r image.Rectangle) {
 func Game(d *Data) *Canvas {
 	c := NewCanvas()
 	titleBar(c, d, "Game", false)
+	if d.Controllers > 0 {
+		x := margin + Measure("GAME", Bold, 22) + 16
+		x += gamepad(c, x, 16) + 6
+		if d.Controllers > 1 {
+			c.Text(fmt.Sprintf("×%d", d.Controllers), x, 18, Bold, 20, Left, black)
+		}
+	}
 	g := d.Game
 	if g == nil {
 		message(c, header, "No recent games", "Play something on Steam and it will show up here.")

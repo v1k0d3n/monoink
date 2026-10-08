@@ -46,26 +46,27 @@ type Engine struct {
 	DataDir string // for cached cover art
 	Log     *slog.Logger
 
-	mu         sync.Mutex
-	report     *weather.Report
-	wxMsg      string
-	wxKey      string
-	wxAt       time.Time
-	game       *steam.Game
-	gameAt     time.Time
-	art        map[int]image.Image
-	cards      map[string]*screens.Card
-	pending    map[string]*screens.Card
-	photoIdx   int
-	photoAt    time.Time
-	screensKey string // pinned screen + rotation, to detect changes
-	override   string // screen shown until overrideTo
-	overrideTo time.Time
-	current    string
-	renderAt   time.Time
-	lastFrame  []byte
-	force      bool
-	sending    bool
+	mu          sync.Mutex
+	report      *weather.Report
+	wxMsg       string
+	wxKey       string
+	wxAt        time.Time
+	game        *steam.Game
+	gameAt      time.Time
+	art         map[int]image.Image
+	cards       map[string]*screens.Card
+	pending     map[string]*screens.Card
+	photoIdx    int
+	photoAt     time.Time
+	screensKey  string // pinned screen + rotation, to detect changes
+	controllers int    // last controller count shown on the game screen
+	override    string // screen shown until overrideTo
+	overrideTo  time.Time
+	current     string
+	renderAt    time.Time
+	lastFrame   []byte
+	force       bool
+	sending     bool
 
 	kick chan struct{}
 }
@@ -313,6 +314,12 @@ func (e *Engine) step(ctx context.Context) {
 	}
 	photoDue := id == "photo" && now.Sub(e.photoAt) >= time.Duration(s.PhotoMinutes)*time.Minute
 	need := e.force || id != e.current || due(scr.Cadence, e.renderAt, now) || photoDue
+	if id == "game" && e.Sys != nil {
+		// Redraw as soon as a controller connects or disconnects.
+		if n := e.Sys.Controllers(); n != e.controllers {
+			e.controllers, need = n, true
+		}
+	}
 	e.mu.Unlock()
 	if !need {
 		return
@@ -406,6 +413,7 @@ func (e *Engine) snapshot(ctx context.Context, now time.Time, s settings.Setting
 	e.mu.Lock()
 	d.Weather, d.WeatherMsg = e.report, e.wxMsg
 	d.Card = e.freshCardLocked(now)
+	d.Controllers = e.controllers
 	e.mu.Unlock()
 	if !s.Weather.Configured() {
 		d.Weather, d.WeatherMsg = nil, "Choose a location in the plugin settings."
