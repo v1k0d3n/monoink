@@ -57,7 +57,7 @@ This month, with today highlighted.
 
 Pictures from a folder you choose, dithered for the e-ink panel. By default
 each photo is shown whole (**Fit**); turn on **Fill the screen** to crop it
-to the full display instead.
+to the full display instead. Modeling here: Juno Leigh, the maintainer's dog.
 
 | Fit (default) | Fit, dark mode | Fill the screen |
 | --- | --- | --- |

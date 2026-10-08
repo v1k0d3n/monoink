@@ -11,6 +11,9 @@ Gaming Mode. No terminal, no sudo, no tracking.
   <br>
   <img src="docs/images/screens/weather.png" width="45%" alt="Weather screen">
   <img src="docs/images/screens/clock.png" width="45%" alt="Clock screen">
+  <br>
+  <img src="docs/images/screens/photo.png" width="45%" alt="Photo frame screen, photo shown whole">
+  <img src="docs/images/screens/photo-fill.png" width="45%" alt="Photo frame screen, photo filling the display">
 </p>
 
 > **Status: v0.1, first public release.** Tested on a Steam Machine running a
