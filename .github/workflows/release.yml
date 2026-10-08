@@ -32,7 +32,12 @@ jobs:
           # newest release (used by Decky's "Install Plugin from URL").
           cp out/monoink.zip "out/monoink-$GITHUB_REF_NAME.zip"
           (cd out && sha256sum "monoink-$GITHUB_REF_NAME.zip" > "monoink-$GITHUB_REF_NAME.zip.sha256")
-          cat > out/notes.md <<EOF
+          # Curated notes for this version, if any, go first.
+          if [ -f "docs/release-notes/$GITHUB_REF_NAME.md" ]; then
+            cp "docs/release-notes/$GITHUB_REF_NAME.md" out/notes.md
+            printf '\n' >> out/notes.md
+          fi
+          cat >> out/notes.md <<EOF
           ## Install or update
 
           1. In Gaming Mode, open Quick Access (**⋯**) → **Decky** → ⚙ **Settings**, and turn on **Developer mode**.
