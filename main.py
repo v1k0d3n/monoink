@@ -7,6 +7,7 @@ standard library exclusively, so it has no dependencies to break.
 
 import asyncio
 import base64
+import hashlib
 import http.client
 import json
 import os
@@ -34,28 +35,40 @@ CONTROL_SOCKET = os.path.join(RUNTIME_DIR, "control.sock")
 PROVIDER_SOCKET = os.path.join(RUNTIME_DIR, "providers.sock")
 
 
-def _binary() -> str:
-    """Path to an executable monoinkd.
+RUN_BINARY = os.path.join(decky.DECKY_PLUGIN_RUNTIME_DIR, "bin", "monoinkd")
 
-    Decky unpacks plugins as root and may drop the executable bit; since we
-    run as the user and can't chmod there, fall back to a private copy.
+
+def _sha256(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _binary() -> str:
+    """Path to the monoinkd to run: always a private copy of the bundled one.
+
+    Running the bundled file directly would keep it busy, and Decky's
+    "Install Plugin from ZIP File" extracts over the existing plugin
+    folder: overwriting a running program fails ("text file busy"), which
+    aborted ZIP updates and left Decky's install dialog spinning. A copy in
+    the plugin's data folder also works when Decky's unzip drops the
+    executable bit. The copy is refreshed whenever the bundled binary's
+    contents change; replacing it while an old copy runs is safe, because
+    the rename leaves the running program's file intact.
     """
-    if os.access(BUNDLED_BINARY, os.X_OK):
-        return BUNDLED_BINARY
-    copy = os.path.join(decky.DECKY_PLUGIN_RUNTIME_DIR, "bin", "monoinkd")
-    src = os.stat(BUNDLED_BINARY)
     try:
-        dst = os.stat(copy)
-        fresh = dst.st_size == src.st_size and dst.st_mtime >= src.st_mtime
+        fresh = _sha256(RUN_BINARY) == _sha256(BUNDLED_BINARY)
     except OSError:
         fresh = False
     if not fresh:
-        os.makedirs(os.path.dirname(copy), exist_ok=True)
-        tmp = copy + ".tmp"
+        os.makedirs(os.path.dirname(RUN_BINARY), exist_ok=True)
+        tmp = RUN_BINARY + ".tmp"
         shutil.copyfile(BUNDLED_BINARY, tmp)
         os.chmod(tmp, 0o755)
-        os.replace(tmp, copy)
-    return copy
+        os.replace(tmp, RUN_BINARY)
+    return RUN_BINARY
 
 
 class _UnixHTTPConnection(http.client.HTTPConnection):
@@ -99,8 +112,13 @@ class Plugin:
         await self._stop_process()
 
     async def _uninstall(self):
-        # Nothing to clean up outside Decky's own plugin and settings dirs.
-        pass
+        # Remove the private copy of the program; settings and history stay
+        # in Decky's folders in case the plugin is reinstalled.
+        for path in (RUN_BINARY, RUN_BINARY + ".tmp"):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
 
     async def _supervise(self):
         delay = 1.0

@@ -62,6 +62,11 @@ Choose **one** of these.
 
 This link always points at the newest release.
 
+Installing from a link can pause for a minute or two at the start: Decky
+first reports the install to its own plugin-store server, and waits for it
+even when that server is slow. Leave it running; pressing Cancel doesn't
+stop it, and it continues on its own.
+
 ### Or: install from a downloaded file
 
 1. Download `monoink-vX.Y.Z.zip` from the
@@ -124,6 +129,7 @@ Install again using either method above. Your settings are kept.
 | It connects to the wrong display | **Find displays** → pick the right one. |
 | The panel says the service isn't running | Restart Decky (Decky settings → General), or reboot. |
 | The faceplate shows an old picture | Tap **Redraw now** and wait for "Display updated". |
+| Decky's install dialog keeps spinning | Installs from a link can take a minute or two (see above). If you're updating **from v0.1.1 with a ZIP file**, the install can stop part-way: use **Install Plugin from URL** instead, or restart Decky (Decky settings → General) and try again. Updates from v0.1.2 onward aren't affected. |
 
 If it still doesn't work, please open an issue with the **Something isn't
 working** form and attach the log file:
