@@ -112,7 +112,10 @@ class Plugin:
                 return
             self._rotate_log()
             env = dict(os.environ)
-            with open(LOG_FILE, "ab") as log:
+            # The log includes the display's Bluetooth address: keep it private.
+            fd = os.open(LOG_FILE, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+            os.fchmod(fd, 0o600)  # also tighten logs created by older versions
+            with os.fdopen(fd, "ab") as log:
                 self._proc = await asyncio.create_subprocess_exec(
                     binary, "serve",
                     "-settings", decky.DECKY_PLUGIN_SETTINGS_DIR,

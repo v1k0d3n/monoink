@@ -98,6 +98,7 @@ Compared with the official **JSAUX E-INK V1.1** package (installer revision
 | **Your location** | Looks up your location from your IP address (`ipwho.is`) automatically, for the calendar and weather | Nothing is looked up until you type a city for weather |
 | **Local network interface** | A web API on `127.0.0.1:39062` with no authentication or origin checks; it broadcasts status (including the AI-assistant data above) to any connected client, and can list image files in any folder | Private sockets readable only by your user account; no network port is opened |
 | **Temporary files** | Lock files in `/tmp` created world-writable (`0666`) | None in shared locations |
+| **Input devices** | The desktop app opens the touchscreen, the Steam Controller puck's keyboard interface and gamepads directly, and reads their raw key, button and touch events while it's open, whichever app you're using; the installer grants this with a system-wide rule in `/etc`. Used to navigate its own window | Never opens input devices; only counts connected gamepads from the system's device list (names and types, never serial numbers) |
 
 This describes their package as it was when I examined it; later JSAUX
 releases may differ.
@@ -115,13 +116,14 @@ These are rules the code follows, and that every contribution must keep:
 - **Approval for integrations.** Programs that send cards are held until you
   approve them, and you can revoke them at any time.
 
-Everything monoink reads or contacts:
+Everything monoink reads or contacts is below. **[docs/privacy.md](docs/privacy.md)** has the full accounting: what it stores and where, what it never does, and commands to check all of it yourself.
 
 | Source | When |
 | --- | --- |
 | BlueZ (the system Bluetooth service) | always: finding and talking to the display |
 | `/proc`, `/sys` | performance screen: CPU, memory, temperatures, GPU load |
 | `/proc/bus/input/devices` (device names and types only, never serial numbers) | game screen: whether a game controller is connected |
+| Command lines of running programs | game screen: finding the game Steam launched (only its app number is kept) |
 | Steam's local files (`steamapps/*.acf`, `userdata/*/config/localconfig.vdf`, `appcache/librarycache`) | game screen: name, playtime, cached cover art |
 | The photo folder you choose | photo frame |
 | `api.open-meteo.com`, `geocoding-api.open-meteo.com` | only after you set a weather location |
@@ -137,6 +139,7 @@ Everything monoink reads or contacts:
 
 - [Installing](docs/install.md): step-by-step install, update and troubleshooting.
 - [Screens](docs/screens.md): every screen, in light and dark mode.
+- [Privacy](docs/privacy.md): everything monoink reads, stores and contacts, and how to verify it.
 - [Custom cards](docs/providers.md): show your own information on the display.
 - [Development](docs/development.md): building, testing, CI and releases.
 - [Contributors](docs/contributors.md): who built this and how to help.

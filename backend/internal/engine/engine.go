@@ -491,6 +491,7 @@ func (e *Engine) fetchArt(ctx context.Context, appID int, dst string) error {
 	if err != nil {
 		return err
 	}
+	req.Header.Set("User-Agent", "monoink (+https://github.com/v1k0d3n/monoink)")
 	client := &http.Client{Timeout: 20 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
