@@ -387,6 +387,14 @@ function Content() {
           />
         </PanelSectionRow>
         <PanelSectionRow>
+          <ToggleField
+            label="Show year progress"
+            description="Day and week of the year on the Clock screen."
+            checked={s.year_progress}
+            onChange={(v) => patch({ year_progress: v })}
+          />
+        </PanelSectionRow>
+        <PanelSectionRow>
           <Field label="Weather location" description={s.weather.place || "Off"} />
         </PanelSectionRow>
         <PanelSectionRow>

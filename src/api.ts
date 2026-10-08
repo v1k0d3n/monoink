@@ -11,6 +11,7 @@ export interface Settings {
   clock_24h: boolean;
   dark_mode: boolean;
   week_starts_sunday: boolean;
+  year_progress: boolean;
   weather: { latitude: number; longitude: number; place: string; imperial: boolean };
   allow_steam_cdn: boolean;
   game_while_playing: boolean;

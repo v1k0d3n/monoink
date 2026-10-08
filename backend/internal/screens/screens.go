@@ -37,7 +37,8 @@ type Data struct {
 	Now           time.Time
 	Clock24h      bool
 	WeekStartsSun bool
-	Battery       int // display battery percent, -1 unknown
+	YearProgress  bool // show day/week of the year on the Clock screen
+	Battery       int  // display battery percent, -1 unknown
 
 	Weather    *weather.Report
 	Place      string
@@ -173,14 +174,26 @@ func durationLabel(d time.Duration) string {
 
 func Clock(d *Data) *Canvas {
 	c := NewCanvas()
+	// With year progress shown, everything moves up to make room for it.
+	top := 110
+	if d.YearProgress {
+		top = 62
+	}
 	t := d.timeString(d.Now)
-	c.Text(t, W/2, 110, Bold, 190, Center, black)
+	c.Text(t, W/2, top, Bold, 190, Center, black)
 	if a := d.ampm(); a != "" {
 		w := Measure(t, Bold, 190)
-		c.Text(a, W/2+w/2+8, 120, Bold, 30, Left, black)
+		c.Text(a, W/2+w/2+8, top+10, Bold, 30, Left, black)
 	}
-	c.Text(d.Now.Format("Monday"), W/2, 330, Medium, 40, Center, black)
-	c.Text(d.Now.Format("January 2, 2006"), W/2, 384, Regular, 30, Center, black)
+	c.Text(d.Now.Format("Monday"), W/2, top+220, Medium, 40, Center, black)
+	c.Text(d.Now.Format("January 2, 2006"), W/2, top+274, Regular, 30, Center, black)
+	if d.YearProgress {
+		yp := YearProgressAt(d.Now)
+		y := top + 322
+		c.Text(yp.String(), W/2, y, Regular, 20, Center, black)
+		// Narrow enough to clear the weather and battery footer on both sides.
+		bar(c, image.Rect(W/2-120, y+28, W/2+120, y+40), yp.Fraction()*100)
+	}
 
 	foot := ""
 	if d.Weather != nil {
