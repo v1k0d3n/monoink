@@ -29,6 +29,7 @@ Nothing is written anywhere else.
 | --- | --- | --- |
 | `~/homebrew/settings/monoink/settings.json` | Your settings: screens, clock options, weather location (place name and coordinates), photo folder, your display's Bluetooth address, approved providers | Only your user (`0600`) |
 | `~/homebrew/data/monoink/performance-history.json` | The last 30 minutes of CPU, GPU and memory load, for the Performance graph | Only your user (`0600`) |
+| `~/homebrew/data/monoink/bin/monoinkd` | A copy of monoink's own program, which the plugin runs from here so Decky can replace the plugin's files during an update. Removed when you uninstall. | Your user |
 | `~/homebrew/data/monoink/art/` | Cover art downloaded from Steam's CDN, **only** if you turn on "Download missing cover art" | Only your user |
 | `~/homebrew/logs/monoink/monoinkd.log` | The service log: connection events, which screen was sent, errors. Includes your display's Bluetooth address. | Only your user (`0600`) |
 | `/run/user/<uid>/monoink/` | Two sockets the panel and providers use to talk to the service. Removed on shutdown. | Only your user (`0700` folder, `0600` sockets) |
