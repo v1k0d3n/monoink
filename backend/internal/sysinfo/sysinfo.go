@@ -73,13 +73,32 @@ func (s *Sampler) Sample() Snapshot {
 		}
 	}
 	s.last = snap
-	if n := len(s.history); n == 0 || snap.At.Sub(s.history[n-1].At) >= time.Minute {
-		s.history = append(s.history, snap)
-		if len(s.history) > historyLen {
-			s.history = s.history[len(s.history)-historyLen:]
+	s.record(snap)
+	return snap
+}
+
+// record appends a per-minute history entry. Minutes with no sample (the
+// service was stopped, or the machine slept) are filled with unknown
+// values so the graph shows a gap instead of joining distant points.
+func (s *Sampler) record(snap Snapshot) {
+	n := len(s.history)
+	if n > 0 && snap.At.Sub(s.history[n-1].At) < time.Minute {
+		return
+	}
+	if n > 0 {
+		missing := int(snap.At.Sub(s.history[n-1].At)/time.Minute) - 1
+		for i := 1; i <= min(missing, historyLen); i++ {
+			s.history = append(s.history, unknownAt(s.history[n-1].At.Add(time.Duration(i)*time.Minute)))
 		}
 	}
-	return snap
+	s.history = append(s.history, snap)
+	if len(s.history) > historyLen {
+		s.history = s.history[len(s.history)-historyLen:]
+	}
+}
+
+func unknownAt(t time.Time) Snapshot {
+	return Snapshot{At: t, CPU: -1, GPU: -1, Mem: -1, CPUTemp: -1, GPUTemp: -1, Battery: -1}
 }
 
 // Last returns the latest sample and a copy of the history.
