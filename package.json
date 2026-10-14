@@ -19,7 +19,7 @@
     "@decky/ui": "^4.11.1",
     "@types/react": "19.1.1",
     "@types/react-dom": "19.1.1",
-    "rollup": "^4.53.3",
+    "rollup": "^4.64.5",
     "typescript": "^5.6.2"
   },
   "dependencies": {
