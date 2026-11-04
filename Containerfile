@@ -5,7 +5,7 @@
 #
 #   podman build -t monoink-build -f Containerfile .     (or docker build)
 
-FROM docker.io/library/golang:1.26 AS go
+FROM docker.io/library/golang:1.27 AS go
 
 FROM docker.io/library/node:22-bookworm
 
